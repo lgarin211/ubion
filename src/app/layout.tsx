@@ -110,7 +110,7 @@ export default function RootLayout({
             </div>
             <div className="mt-8 pt-8 border-t">
               <p className="text-center text-gray-500">
-                © 2024 Plaza Festival. All rights reserved.
+                © 2025 Plaza Festival. All rights reserved.
               </p>
             </div>
           </div>

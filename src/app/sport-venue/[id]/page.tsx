@@ -30,7 +30,7 @@ const venue = {
     { icon: "📶", name: "WiFi" },
     { icon: "🚪", name: "Changing Room" },
     { icon: "🎾", name: "Equipment Rent" },
-    { icon: "🎾", name: "Equipment Rent" }
+    { icon: "🎾", name: "Equipment Rent2" }
   ],
   price: 250000,
   promo: 0.1,

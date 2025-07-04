@@ -7,7 +7,7 @@ export function EventsSection() {
     <section className="py-20 bg-gray-50">
       <div className="container mx-auto px-6">
         <h2 className="text-4xl font-bold mb-12">Event & Promotion Information</h2>
-        <p className="text-gray-600 mb-8">Don't miss out on other exciting events and promos at Plaza Festival</p>
+        <p className="text-gray-600 mb-8">Don&apos;t miss out on other exciting events and promos at Plaza Festival</p>
         
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
           {[

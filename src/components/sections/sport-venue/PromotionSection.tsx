@@ -18,7 +18,7 @@ const promotions = [
   {
     id: 2,
     title: "Pre-swim Preparation",
-    description: "Don't forget to prepare before swimming!",
+    description: "Don&apos;t forget to prepare before swimming!",
     image: "https://images.pexels.com/photos/863988/pexels-photo-863988.jpeg"
   },
   {
@@ -36,7 +36,7 @@ export function PromotionSection() {
         <div className="relative">
           <h2 className="text-4xl font-bold mb-2">ON PROMOTION</h2>
           <div className="absolute top-0 right-0 bg-[#8BC34A] text-white px-4 py-2 rounded-full transform -translate-y-1/2">
-            don't miss it!
+            don&apos;t miss it!
           </div>
         </div>
         

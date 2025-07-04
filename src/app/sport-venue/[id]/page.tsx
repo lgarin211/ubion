@@ -231,22 +231,25 @@ export default function VenueDetailPage() {
           </div>
           
           {/* Side Images - Full Width on Mobile (below main image), Half on Desktop */}
-          <div className="w-full md:flex-1 grid grid-cols-2 gap-4">
-            {venue.images.slice(1, 5).map((img, i) => (
-              <div 
-                key={i} 
-                className="rounded-lg overflow-hidden cursor-pointer hover:scale-105 transition-transform duration-300"
-                onClick={() => setCurrentImageIndex(i + 1)}
-              >
-                <Image 
-                  src={img} 
-                  alt={venue.name} 
-                  width={400} 
-                  height={250} 
-                  className="object-cover w-full h-36" 
-                />
-              </div>
-            ))}
+          {/* Side Images - Full Width on Mobile (below main image), Half on Desktop */}
+          <div className="w-full md:flex-1">
+            <div className="grid grid-cols-4 md:grid-cols-2 gap-4">
+              {venue.images.slice(1, 5).map((img, i) => (
+                <div 
+                  key={i} 
+                  className="rounded-lg overflow-hidden cursor-pointer hover:scale-105 transition-transform duration-300"
+                  onClick={() => setCurrentImageIndex(i + 1)}
+                >
+                  <Image 
+                    src={img} 
+                    alt={venue.name} 
+                    width={400} 
+                    height={250} 
+                    className="object-cover w-full h-36" 
+                  />
+                </div>
+              ))}
+            </div>
           </div>
         </div>
         <div className="flex items-center justify-center rounded-lg overflow-hidden bg-gray-800 mb-4">

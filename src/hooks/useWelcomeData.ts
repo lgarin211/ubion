@@ -5,9 +5,17 @@ import { SessionCache, ApiConfig, CacheKeys } from '@/lib/sessionCache';
 export interface WelcomeData {
   message: string;
   data: {
+    component0: Array<{
+      id: string;
+      banner: string;
+      title: string;
+      desc: string;
+      created_at: string;
+      updated_at: string;
+    }>;
     component1: {
       title: string;
-      big_banner: string;
+      big_banner: string[] | string;
       big_welcome: string;
     };
     component2: Array<{

@@ -1,5 +1,7 @@
 import { Button } from "@/components/ui/button"
 import Image from "next/image"
+import { useState } from "react"
+import { ImageModal } from "@/components/ui/image-modal"
 
 interface SportsExperienceSectionProps {
   data?: Array<{
@@ -12,6 +14,12 @@ interface SportsExperienceSectionProps {
 }
 
 export function SportsExperienceSection({ data }: SportsExperienceSectionProps) {
+  const [selectedImage, setSelectedImage] = useState<{
+    src: string;
+    alt: string;
+    description: string;
+  } | null>(null)
+
   // Default images jika API data belum tersedia
   const defaultImages = [
     {
@@ -63,13 +71,31 @@ export function SportsExperienceSection({ data }: SportsExperienceSectionProps) 
     return htmlString.replace(/<[^>]*>/g, '').replace(/&mdash;/g, '—');
   };
 
+  // Handle image click to open modal
+  const handleImageClick = (item: { id: number; image: string; description: string }) => {
+    setSelectedImage({
+      src: item.image,
+      alt: parseHtmlContent(item.description || `Sport ${item.id}`),
+      description: parseHtmlContent(item.description || `Sport ${item.id}`)
+    });
+  };
+
+  // Close modal
+  const closeModal = () => {
+    setSelectedImage(null);
+  };
+
   return (
     <section className="py-20 bg-white">
       <div className="container mx-auto px-6">
         <h2 className="text-4xl font-bold mb-12">Make your sports<br />experience more energizing</h2>
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
           {images.slice(0, 8).map((item) => (
-            <div key={item.id} className="aspect-square rounded-lg overflow-hidden relative group">
+            <div 
+              key={item.id} 
+              className="aspect-square rounded-lg overflow-hidden relative group cursor-pointer"
+              onClick={() => handleImageClick(item)}
+            >
               <Image 
                 src={item.image}
                 alt={parseHtmlContent(item.description || `Sport ${item.id}`)}
@@ -89,6 +115,15 @@ export function SportsExperienceSection({ data }: SportsExperienceSectionProps) 
           <Button variant="outline">See More</Button>
         </div>
       </div>
+
+      {/* Image Modal */}
+      {selectedImage && (
+        <ImageModal
+          isOpen={!!selectedImage}
+          onClose={closeModal}
+          image={selectedImage}
+        />
+      )}
     </section>
   )
 }

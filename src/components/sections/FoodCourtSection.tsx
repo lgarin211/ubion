@@ -19,7 +19,7 @@ interface Restaurant {
 interface FoodCourtSectionProps {
   data?: Array<{
     id: number;
-    img: string;
+    image: string;
     created_at: string;
     updated_at: string;
   }>;
@@ -30,6 +30,7 @@ export function FoodCourtSection({ data }: FoodCourtSectionProps) {
   const [selectedRestaurantId, setSelectedRestaurantId] = useState<number | null>(null)
   const [selectedLocation, setSelectedLocation] = useState<string>("all")
   const [restaurantLocations, setRestaurantLocations] = useState<Map<number, string>>(new Map())
+  const [restaurantNames, setRestaurantNames] = useState<Map<number, string>>(new Map())
   const [loadingLocations, setLoadingLocations] = useState(false)
   
   const { 
@@ -66,8 +67,8 @@ export function FoodCourtSection({ data }: FoodCourtSectionProps) {
 
   const restaurants = data && data.length > 0 ? data : defaultRestaurants;
 
-  // Function to fetch location for a single restaurant
-  const fetchRestaurantLocation = async (restaurantId: number): Promise<string> => {
+  // Function to fetch location and name for a single restaurant
+  const fetchRestaurantData = async (restaurantId: number): Promise<{location: string, name: string}> => {
     try {
       const apiUrl = `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/menuresto/${restaurantId}`;
       const response = await fetch(apiUrl);
@@ -75,42 +76,51 @@ export function FoodCourtSection({ data }: FoodCourtSectionProps) {
         throw new Error(`HTTP error! status: ${response.status}`);
       }
       const result = await response.json();
-      return result.data.component1.location || 'Unknown Location';
+      return {
+        location: result.data.component1.location || 'Unknown Location',
+        name: result.data.component1.resto_name || `Restaurant ${restaurantId}`
+      };
     } catch (error) {
-      console.error(`Error fetching location for restaurant ${restaurantId}:`, error);
-      return 'Unknown Location';
+      console.error(`Error fetching data for restaurant ${restaurantId}:`, error);
+      return {
+        location: 'Unknown Location',
+        name: `Restaurant ${restaurantId}`
+      };
     }
   };
 
-  // Fetch all restaurant locations when component mounts or data changes
+  // Fetch all restaurant data when component mounts or data changes
   useEffect(() => {
-    const fetchAllLocations = async () => {
+    const fetchAllRestaurantData = async () => {
       if (restaurants.length === 0) return;
       
       setLoadingLocations(true);
       const locationMap = new Map<number, string>();
+      const nameMap = new Map<number, string>();
       
       try {
-        // Fetch locations for all restaurants in parallel
-        const locationPromises = restaurants.map(async (restaurant) => {
-          const location = await fetchRestaurantLocation(restaurant.id);
-          return { id: restaurant.id, location };
+        // Fetch data for all restaurants in parallel
+        const dataPromises = restaurants.map(async (restaurant) => {
+          const data = await fetchRestaurantData(restaurant.id);
+          return { id: restaurant.id, ...data };
         });
         
-        const locations = await Promise.all(locationPromises);
-        locations.forEach(({ id, location }) => {
+        const restaurantData = await Promise.all(dataPromises);
+        restaurantData.forEach(({ id, location, name }) => {
           locationMap.set(id, location);
+          nameMap.set(id, name);
         });
         
         setRestaurantLocations(locationMap);
+        setRestaurantNames(nameMap);
       } catch (error) {
-        console.error('Error fetching restaurant locations:', error);
+        console.error('Error fetching restaurant data:', error);
       } finally {
         setLoadingLocations(false);
       }
     };
 
-    fetchAllLocations();
+    fetchAllRestaurantData();
   }, [restaurants]);
 
   // Get unique locations for filter dropdown
@@ -189,14 +199,16 @@ export function FoodCourtSection({ data }: FoodCourtSectionProps) {
             <div key={restaurant.id} className="bg-white p-6 rounded-lg shadow-sm text-center">
               <div className="w-20 h-20 mx-auto mb-4 rounded-full overflow-hidden">
                 <Image 
-                  src={getFullImageUrl(restaurant.img)}
+                  src={getFullImageUrl(restaurant?.image)}
                   alt={`Restaurant ${restaurant.id}`}
                   width={80}
                   height={80}
                   className="object-cover w-full h-full"
                 />
               </div>
-              <h3 className="font-semibold mb-2">Restaurant {restaurant.id}</h3>
+              <h3 className="font-semibold mb-2">
+                {restaurantNames.get(restaurant.id) || `Restaurant ${restaurant.id}`}
+              </h3>
               {restaurantLocations.has(restaurant.id) && (
                 <p className="text-xs text-gray-600 mb-2">
                   {restaurantLocations.get(restaurant.id)}

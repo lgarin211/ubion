@@ -58,8 +58,8 @@ export default function Home() {
           <CacheDebug />
         </div>
       )}
-      <HeroSection data={data.data.component1} />
-      <GetToKnowSection />
+      <HeroSection data={data.data.component0} />
+      <GetToKnowSection data={data.data.component1} />
       <EventsSection data={data.data.component2} />
       <SportsExperienceSection data={data.data.component3} />
       <FoodCourtSection data={data.data.component4} />

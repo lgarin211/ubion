@@ -1,10 +1,15 @@
 "use client";
 
-import Image from "next/image";
-import { Button } from "@/components/ui/button";
 import { useState, useEffect } from "react";
 import { useParams } from "next/navigation";
 import { parseAndFormatImageList, getBaseUrl } from "@/lib/imageUtils";
+import { ImageGallery } from "@/components/sections/sport-venue/ImageGallery";
+import { VenueInfo } from "@/components/sections/sport-venue/VenueInfo";
+import { BookingSection } from "@/components/sections/sport-venue/BookingSection";
+import { CheckoutModal } from "@/components/sections/sport-venue/CheckoutModal";
+import { PaymentConfirmationModal } from "@/components/sections/sport-venue/PaymentConfirmationModal";
+import { PromoCarousel } from "@/components/sections/sport-venue/PromoCarousel";
+import { TestimonialCarousel } from "@/components/sections/sport-venue/TestimonialCarousel";
 
 interface FacilityDetail {
   id: number;
@@ -25,6 +30,32 @@ interface AvailableTime {
   hour: number;
 }
 
+interface CustomerDetails {
+  first_name: string;
+  last_name: string;
+  email: string;
+  phone: string;
+  address: string;
+  city: string;
+  postal_code: string;
+}
+
+interface PaymentMethods {
+  success: boolean;
+  payment_methods: {
+    [key: string]: {
+      type: string;
+      name: string;
+      description: string;
+      enabled: boolean;
+      icon: string;
+      banks?: { [key: string]: { name: string; code: string } };
+      providers?: { [key: string]: { name: string; code: string } };
+      stores?: { [key: string]: { name: string; code: string } };
+    };
+  };
+}
+
 export default function VenueDetailPage() {
   const params = useParams();
   const facilityId = params.id as string;
@@ -32,7 +63,6 @@ export default function VenueDetailPage() {
   const [facilityData, setFacilityData] = useState<FacilityDetail[]>([]);
   const [loading, setLoading] = useState(true);
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
-  const [showAllPhotos, setShowAllPhotos] = useState(false);
   const [currentPromoIndex, setCurrentPromoIndex] = useState(0);
   const [currentTestimonialIndex, setCurrentTestimonialIndex] = useState(0);
   
@@ -45,6 +75,174 @@ export default function VenueDetailPage() {
   const [availableTimes, setAvailableTimes] = useState<AvailableTime[]>([]);
   const [selectedTimes, setSelectedTimes] = useState<string[]>([]);
   const [loadingTimes, setLoadingTimes] = useState(false);
+  
+  // Checkout state
+  const [showCheckout, setShowCheckout] = useState(false);
+  const [showPaymentConfirmation, setShowPaymentConfirmation] = useState(false);
+  const [paymentMethods, setPaymentMethods] = useState<PaymentMethods | null>(null);
+  const [loadingPaymentMethods, setLoadingPaymentMethods] = useState(false);
+  const [selectedPaymentType, setSelectedPaymentType] = useState<string>('');
+  const [selectedPaymentDetails, setSelectedPaymentDetails] = useState<string>('');
+  const [customerDetails, setCustomerDetails] = useState<CustomerDetails>({
+    first_name: '',
+    last_name: '',
+    email: '',
+    phone: '',
+    address: '',
+    city: '',
+    postal_code: ''
+  });
+  const [submittingTransaction, setSubmittingTransaction] = useState(false);
+
+  // Load customer details from localStorage on component mount
+  useEffect(() => {
+    const savedCustomerDetails = localStorage.getItem('customerDetails');
+    if (savedCustomerDetails) {
+      try {
+        const parsed = JSON.parse(savedCustomerDetails);
+        setCustomerDetails(parsed);
+      } catch (error) {
+        console.error('Error parsing saved customer details:', error);
+      }
+    }
+  }, []);
+
+  // Save customer details to localStorage whenever they change
+  useEffect(() => {
+    if (customerDetails.first_name || customerDetails.email) {
+      localStorage.setItem('customerDetails', JSON.stringify(customerDetails));
+    }
+  }, [customerDetails]);
+
+  // Fetch payment methods
+  const fetchPaymentMethods = async () => {
+    setLoadingPaymentMethods(true);
+    try {
+      const baseUrl = getBaseUrl();
+      const response = await fetch(`${baseUrl}/api/payment-methods`);
+      const data = await response.json();
+      setPaymentMethods(data);
+    } catch (error) {
+      console.error('Error fetching payment methods:', error);
+    } finally {
+      setLoadingPaymentMethods(false);
+    }
+  };
+
+  // Handle checkout button click
+  const handleCheckout = async () => {
+    setShowCheckout(true);
+    if (!paymentMethods) {
+      await fetchPaymentMethods();
+    }
+  };
+
+  // Handle customer details change
+  const handleCustomerDetailsChange = (field: keyof CustomerDetails, value: string) => {
+    setCustomerDetails(prev => ({
+      ...prev,
+      [field]: value
+    }));
+  };
+
+  // Show payment confirmation modal
+  const showPaymentConfirmationModal = () => {
+    if (!selectedSubFacility || selectedTimes.length === 0) {
+      alert('Please select a facility and time slots');
+      return;
+    }
+
+    if (!customerDetails.first_name || !customerDetails.email || !customerDetails.phone) {
+      alert('Please fill in required customer details');
+      return;
+    }
+
+    if (!selectedPaymentType) {
+      alert('Please select a payment method');
+      return;
+    }
+
+    setShowPaymentConfirmation(true);
+  };
+
+  // Submit transaction (after confirmation)
+  const submitTransaction = async () => {
+    setSubmittingTransaction(true);
+    try {
+      const baseUrl = getBaseUrl();
+      const transactionData = {
+        idsubfacility: selectedSubFacility!.id,
+        time_start: selectedTimes,
+        price: calculateTotalPrice(),
+        transactionpoin: selectedPaymentType,
+        date_start: selectedDate,
+        detail: {
+          payment_type: selectedPaymentType,
+          customer_details: customerDetails,
+          ...(selectedPaymentDetails && {
+            [selectedPaymentType === 'bank_transfer' ? 'bank' : 
+              selectedPaymentType === 'e_wallet' ? 'ewallet_provider' : 
+              selectedPaymentType === 'convenience_store' ? 'store' : 'provider']: selectedPaymentDetails
+          })
+        }
+      };
+
+      const response = await fetch(`${baseUrl}/api/makeTransaction`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(transactionData)
+      });
+
+      const result = await response.json();
+      
+      if (response.ok) {
+        // Check if the transaction was created successfully and has payment_url
+        if (result.success && result.payment_url) {
+          // Show success message with order details
+          const orderMessage = `Transaction created successfully!\n\nOrder ID: ${result.order_id}\nTransaction ID: ${result.transaction_id}\nAmount: Rp. ${result.midtrans_response?.amount?.toLocaleString() || calculateTotalPrice().toLocaleString()}\n\nYou will be redirected to payment page.`;
+          
+          alert(orderMessage);
+          
+          // Reset form and close modals
+          setShowPaymentConfirmation(false);
+          setShowCheckout(false);
+          setSelectedTimes([]);
+          setSelectedPaymentType('');
+          setSelectedPaymentDetails('');
+          
+          // Open payment URL in a new tab/window
+          // You can change '_blank' to '_self' if you want to redirect in the same tab
+          window.open(result.payment_url, '_blank');
+          
+          // Optional: Store transaction details in localStorage for tracking
+          localStorage.setItem('lastTransaction', JSON.stringify({
+            orderId: result.order_id,
+            transactionId: result.transaction_id,
+            amount: result.midtrans_response?.amount || calculateTotalPrice(),
+            snapToken: result.snap_token,
+            createdAt: new Date().toISOString()
+          }));
+        } else {
+          alert('Transaction submitted successfully!');
+          // Reset form and close modals
+          setShowPaymentConfirmation(false);
+          setShowCheckout(false);
+          setSelectedTimes([]);
+          setSelectedPaymentType('');
+          setSelectedPaymentDetails('');
+        }
+      } else {
+        alert(`Transaction failed: ${result.message || 'Unknown error'}`);
+      }
+    } catch (error) {
+      console.error('Error submitting transaction:', error);
+      alert('Failed to submit transaction. Please try again.');
+    } finally {
+      setSubmittingTransaction(false);
+    }
+  };
 
   useEffect(() => {
     const fetchFacilityData = async () => {
@@ -346,426 +544,92 @@ export default function VenueDetailPage() {
         </div>
       ) : (
         <div className="container mx-auto px-6 pt-10">
-        {/* Gallery */}
-        <div className="flex flex-col md:flex-row gap-4 mb-8 mt-15">
-          {/* Main Image - Full Width on Mobile, Half on Desktop */}
-          <div className="w-full md:flex-1 rounded-lg overflow-hidden relative">
-            <div className="relative w-full h-80">
-              {venue.images.map((img, index) => (
-                <div
-                  key={index}
-                  className={`absolute inset-0 transition-transform duration-500 ease-in-out ${
-                    index === currentImageIndex 
-                      ? 'translate-x-0' 
-                      : index < currentImageIndex 
-                        ? '-translate-x-full' 
-                        : 'translate-x-full'
-                  }`}
-                >
-                  <Image 
-                    src={img} 
-                    alt={venue.name} 
-                    width={400} 
-                    height={500} 
-                    className="object-cover w-full h-80" 
-                  />
-                </div>
-              ))}
-            </div>
-            
-            {/* Navigation Arrows */}
-            <button 
-              onClick={prevImage}
-              className="absolute left-2 top-1/2 transform -translate-y-1/2 bg-black bg-opacity-50 text-white p-2 rounded-full hover:bg-opacity-75 transition-all"
-            >
-              ←
-            </button>
-            <button 
-              onClick={nextImage}
-              className="absolute right-2 top-1/2 transform -translate-y-1/2 bg-black bg-opacity-50 text-white p-2 rounded-full hover:bg-opacity-75 transition-all"
-            >
-              →
-            </button>
-            
-            {/* Dots Indicator */}
-            <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 flex space-x-2">
-              {venue.images.map((_, index) => (
-                <button
-                  key={index}
-                  onClick={() => setCurrentImageIndex(index)}
-                  aria-label={`Go to image ${index + 1}`}
-                  className={`w-2 h-2 rounded-full transition-all ${
-                    index === currentImageIndex ? 'bg-white' : 'bg-white bg-opacity-50'
-                  }`}
-                />
-              ))}
-            </div>
-          </div>
-          
-          {/* Side Images - Full Width on Mobile (below main image), Half on Desktop */}
-          {/* Side Images - Full Width on Mobile (below main image), Half on Desktop */}
-          <div className="w-full md:flex-1">
-            <div className="grid grid-cols-4 md:grid-cols-2 gap-4">
-              {venue.images.slice(1, 5).map((img, i) => (
-                <div 
-                  key={i} 
-                  className="rounded-lg overflow-hidden cursor-pointer hover:scale-105 transition-transform duration-300"
-                  onClick={() => setCurrentImageIndex(i + 1)}
-                >
-                  <Image 
-                    src={img} 
-                    alt={venue.name} 
-                    width={400} 
-                    height={250} 
-                    className="object-cover w-full h-36" 
-                  />
-                </div>
-              ))}
-            </div>
-          </div>
-        </div>
-        <div className="flex items-center justify-center rounded-lg overflow-hidden bg-gray-800 mb-4">
-            <Button 
-              className="bg-teal-400 text-black text-sm"
-              onClick={() => setShowAllPhotos(true)}
-            >
-              Show all photos
-            </Button>
-        </div>
-
-        {/* All Photos Modal */}
-        {showAllPhotos && (
-          <div className="fixed inset-0 bg-black bg-opacity-90 z-50 flex items-center justify-center p-4">
-            <div className="bg-white rounded-lg max-w-6xl max-h-[90vh] overflow-y-auto w-full">
-              <div className="sticky top-0 bg-white p-4 border-b flex justify-between items-center">
-                <h3 className="text-xl font-bold text-black">All Photos - {venue.name}</h3>
-                <button
-                  onClick={() => setShowAllPhotos(false)}
-                  className="text-black hover:text-gray-600 text-2xl font-bold"
-                  aria-label="Close modal"
-                >
-                  ×
-                </button>
-              </div>
-              <div className="p-6 grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-                {venue.images.map((img, index) => (
-                  <div 
-                    key={index} 
-                    className="rounded-lg overflow-hidden cursor-pointer hover:scale-105 transition-transform duration-300"
-                    onClick={() => {
-                      setCurrentImageIndex(index);
-                      setShowAllPhotos(false);
-                    }}
-                  >
-                    <Image 
-                      src={img} 
-                      alt={`${venue.name} - Photo ${index + 1}`} 
-                      width={300} 
-                      height={200} 
-                      className="object-cover w-full h-48" 
-                    />
-                  </div>
-                ))}
-              </div>
-            </div>
-          </div>
-        )}
-
-        {/* Venue Info */}
-        <h1 className="text-3xl font-bold mb-2">{venue.name}</h1>
-        <div className="mb-6 text-gray-200 max-w-2xl" 
-             dangerouslySetInnerHTML={{ __html: mainFacility?.description || "Exciting new sports facility coming soon!" }} 
+        {/* Image Gallery */}
+        <ImageGallery
+          images={venue.images}
+          venueName={venue.name}
+          currentImageIndex={currentImageIndex}
+          setCurrentImageIndex={setCurrentImageIndex}
+          nextImage={nextImage}
+          prevImage={prevImage}
         />
-        
-        {/* Facility Type */}
-        {mainFacility?.f_type && (
-          <div className="mb-4">
-            <span className="bg-teal-400 text-black px-3 py-1 rounded-full text-sm font-semibold">
-              {mainFacility.f_type}
-            </span>
-          </div>
-        )}
 
-        {/* Sub-facilities Selection */}
-        {facilityData.length > 1 && (
-          <div className="mb-6">
-            <h3 className="text-xl font-semibold mb-3 text-teal-400">Available Sub-Facilities:</h3>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-              {facilityData.map((facility) => (
-                <div 
-                  key={facility.id} 
-                  className={`p-3 rounded-lg cursor-pointer transition-all ${
-                    selectedSubFacility?.id === facility.id 
-                      ? 'bg-teal-400 text-black' 
-                      : 'bg-gray-800 hover:bg-gray-700'
-                  }`}
-                  onClick={() => setSelectedSubFacility(facility)}
-                >
-                  <div className="font-semibold">{facility.nama_fasilitas}</div>
-                  <div className={`text-sm ${
-                    selectedSubFacility?.id === facility.id ? 'text-black' : 'text-teal-400'
-                  }`}>
-                    Rp. {facility.pricehours.toLocaleString()}/hour
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
-        )}
-        {/* Facilities */}
-        <div className="flex flex-wrap gap-3 mb-8">
-          {venue.facilities.map((f, i) => (
-            <div key={i} className="flex items-center gap-2 bg-gray-900 px-4 py-2 rounded-lg text-white">
-              <span>{f.icon}</span> {f.name}
-            </div>
-          ))}
-        </div>
-        {/* Booking & Availability */}
-        <div className="flex flex-col md:flex-row gap-8 mb-12">
-          {/* Available Times Display */}
-          {loadingTimes ? (
-            <div className="bg-white rounded-lg p-6 text-black flex-1">
-              <h2 className="font-bold text-lg mb-4 text-green-700">Available Times</h2>
-              <div className="text-center py-4">Loading available times...</div>
-            </div>
-          ) : availableTimes.length > 0 ? (
-            <>
-              <div className="bg-white rounded-lg p-6 text-black flex-1">
-                <h2 className="font-bold text-lg mb-4 text-green-700">Available Times</h2>
-                <div className="mb-4">
-                  <label className="block text-sm font-medium mb-2">Select Date:</label>
-                  <input 
-                    type="date" 
-                    value={selectedDate}
-                    onChange={(e) => setSelectedDate(e.target.value)}
-                    min={new Date().toISOString().split('T')[0]}
-                    className="border rounded px-3 py-2 w-full"
-                  />
-                </div>
-                
-                <div>
-                  <div className="mb-3 text-sm text-gray-600">
-                    Click time slots to select. You can select multiple consecutive hours.
-                  </div>
-                  <div className="grid grid-cols-3 md:grid-cols-4 gap-2 max-h-64 overflow-y-auto">
-                    {availableTimes.map((timeSlot) => (
-                      <button
-                        key={timeSlot.time}
-                        onClick={() => handleTimeSlotClick(timeSlot.time)}
-                        className={`p-2 rounded text-xs transition-all ${
-                          selectedTimes.includes(timeSlot.time)
-                            ? 'bg-green-600 text-white'
-                            : 'bg-gray-100 hover:bg-gray-200 text-gray-800'
-                        }`}
-                      >
-                        <div className="font-semibold">{timeSlot.time}</div>
-                        <div className="text-xs">{timeSlot.label}</div>
-                      </button>
-                    ))}
-                  </div>
-                  {selectedTimes.length > 0 && (
-                    <div className="mt-3 p-2 bg-green-100 rounded text-sm">
-                      <strong>Selected:</strong> {getTimeRangeDisplay()} 
-                      <span className="text-gray-600"> ({selectedTimes.length} hour{selectedTimes.length > 1 ? 's' : ''})</span>
-                    </div>
-                  )}
-                </div>
-              </div>
-              
-              {/* Booking Form - Only show when there are available times */}
-              <div className="bg-white rounded-lg p-6 text-black flex-1">
-                <h2 className="font-bold text-lg mb-4 text-green-700">Booking Venue</h2>
-                
-                {/* Selected Sub-facility Info */}
-                {selectedSubFacility && (
-                  <div className="mb-4 p-3 bg-gray-100 rounded">
-                    <div className="font-semibold text-green-700">{selectedSubFacility.nama_fasilitas}</div>
-                    <div className="text-sm text-gray-600">{selectedSubFacility.f_type}</div>
-                    <div className="font-bold">Rp. {selectedSubFacility.pricehours.toLocaleString()}/hour</div>
-                  </div>
-                )}
-                
-                <form className="flex flex-col gap-3">
-                  <div>
-                    <label className="block text-sm font-medium mb-1">Selected Date:</label>
-                    <input 
-                      type="text" 
-                      value={selectedDate}
-                      readOnly
-                      className="border rounded px-2 py-1 w-full bg-gray-50" 
-                    />
-                  </div>
-                  
-                  <div>
-                    <label className="block text-sm font-medium mb-1">Selected Time(s):</label>
-                    <input 
-                      type="text" 
-                      value={getTimeRangeDisplay()}
-                      readOnly
-                      placeholder="Select time slot(s) from the left"
-                      className="border rounded px-2 py-1 w-full bg-gray-50" 
-                    />
-                    {selectedTimes.length > 0 && (
-                      <div className="text-xs text-gray-600 mt-1">
-                        Duration: {selectedTimes.length} hour{selectedTimes.length > 1 ? 's' : ''}
-                      </div>
-                    )}
-                  </div>
-                  
-                  <div className="text-green-700 text-sm">Promo: 10% discount available</div>
-                  <div className="font-bold">
-                    Total: Rp. {calculateTotalPrice().toLocaleString()}
-                  </div>
-                  
-                  <Button 
-                    className="bg-teal-400 text-black hover:bg-teal-500"
-                    disabled={selectedTimes.length === 0 || !selectedDate}
-                  >
-                    {selectedTimes.length === 0 ? 'Select Time First' : 'Submit Payment'}
-                  </Button>
-                </form>
-              </div>
-            </>
-          ) : (
-            <div className="bg-gradient-to-br from-gray-100 to-gray-200 rounded-lg p-6 text-black flex-1 flex items-center justify-center">
-              <div className="text-center py-8">
-                <div className="text-6xl mb-4">🏗️</div>
-                <div className="text-gray-500 font-semibold text-lg mb-2">Coming Soon</div>
-                <div className="text-gray-400 text-sm max-w-xs mx-auto">
-                  New time slots will be available soon! Stay tuned for booking opportunities.
-                </div>
-              </div>
-            </div>
-          )}
-        </div>
-        {/* Promo Section (carousel) */}
-        <h2 className="text-2xl font-bold mb-4">Check Promo For This Venue Sport</h2>
-        <div className="relative mb-12 flex justify-center">
-          <div className="max-w-4xl w-full relative overflow-hidden">
-            <div 
-              className="flex transition-transform duration-500 ease-in-out"
-              style={{ transform: `translateX(-${currentPromoIndex * 100}%)` }}
-            >
-              {promos.map((promo) => (
-                <div 
-                  key={promo.id} 
-                  className="w-full flex-shrink-0 px-2"
-                >
-                  <div className="bg-white rounded-lg p-4 text-black mx-auto max-w-sm">
-                    <div className="mb-3 rounded-lg overflow-hidden">
-                      <Image 
-                        src={promo.image} 
-                        alt={promo.title} 
-                        width={300} 
-                        height={150} 
-                        className="object-cover w-full h-32" 
-                      />
-                    </div>
-                    <div className="font-bold mb-2">{promo.title}</div>
-                    <div className="mb-3">{promo.description}</div>
-                    <Button className="bg-teal-400 text-black w-full">Get Promo</Button>
-                  </div>
-                </div>
-              ))}
-            </div>
-            
-            {/* Navigation Arrows */}
-            <button 
-              onClick={prevPromo}
-              className="absolute left-0 top-1/2 transform -translate-y-1/2 bg-black bg-opacity-50 text-white p-2 rounded-full hover:bg-opacity-75 transition-all z-10"
-            >
-              ←
-            </button>
-            <button 
-              onClick={nextPromo}
-              className="absolute right-0 top-1/2 transform -translate-y-1/2 bg-black bg-opacity-50 text-white p-2 rounded-full hover:bg-opacity-75 transition-all z-10"
-            >
-              →
-            </button>
-            
-            {/* Dots Indicator */}
-            <div className="flex justify-center mt-4 space-x-2">
-              {promos.map((_, index) => (
-                <button
-                  key={index}
-                  onClick={() => setCurrentPromoIndex(index)}
-                  aria-label={`Go to promo ${index + 1}`}
-                  className={`w-2 h-2 rounded-full transition-all ${
-                    index === currentPromoIndex ? 'bg-teal-400' : 'bg-gray-400'
-                  }`}
-                />
-              ))}
-            </div>
-          </div>
-        </div>
-        {/* Testimonial Section (carousel) */}
-        <h2 className="text-2xl font-bold mb-4">What do they say about <span className="text-green-400">this place?</span></h2>
-        <div className="relative mb-12 flex justify-center">
-          <div className="max-w-4xl w-full relative overflow-hidden">
-            <div 
-              className="flex transition-transform duration-500 ease-in-out"
-              style={{ transform: `translateX(-${currentTestimonialIndex * 100}%)` }}
-            >
-              {testimonials.map((testimonial) => (
-                <div 
-                  key={testimonial.id} 
-                  className="w-full flex-shrink-0 px-2"
-                >
-                  <div className="bg-white rounded-lg p-6 text-black mx-auto max-w-lg">
-                    <div className="flex items-center gap-4 mb-4">
-                      <div className="w-16 h-16 rounded-full overflow-hidden">
-                        <Image 
-                          src={testimonial.avatar} 
-                          alt={testimonial.name} 
-                          width={64} 
-                          height={64} 
-                          className="object-cover w-full h-full" 
-                        />
-                      </div>
-                      <div>
-                        <div className="font-bold text-lg">{testimonial.name}</div>
-                        <div className="flex">
-                          {[...Array(5)].map((_, i) => (
-                            <span key={i} className={i < testimonial.rating ? 'text-yellow-400' : 'text-gray-300'}>★</span>
-                          ))}
-                        </div>
-                      </div>
-                    </div>
-                    <div className="text-base leading-relaxed">{testimonial.text}</div>
-                  </div>
-                </div>
-              ))}
-            </div>
-            
-            {/* Navigation Arrows */}
-            <button 
-              onClick={prevTestimonial}
-              className="absolute left-0 top-1/2 transform -translate-y-1/2 bg-black bg-opacity-50 text-white p-2 rounded-full hover:bg-opacity-75 transition-all z-10"
-            >
-              ←
-            </button>
-            <button 
-              onClick={nextTestimonial}
-              className="absolute right-0 top-1/2 transform -translate-y-1/2 bg-black bg-opacity-50 text-white p-2 rounded-full hover:bg-opacity-75 transition-all z-10"
-            >
-              →
-            </button>
-            
-            {/* Dots Indicator */}
-            <div className="flex justify-center mt-4 space-x-2">
-              {testimonials.map((_, index) => (
-                <button
-                  key={index}
-                  onClick={() => setCurrentTestimonialIndex(index)}
-                  aria-label={`Go to testimonial ${index + 1}`}
-                  className={`w-2 h-2 rounded-full transition-all ${
-                    index === currentTestimonialIndex ? 'bg-green-400' : 'bg-gray-400'
-                  }`}
-                />
-              ))}
-            </div>
-          </div>
-        </div>
+        {/* Venue Information */}
+        <VenueInfo
+          venue={venue}
+          mainFacility={mainFacility}
+          facilityData={facilityData}
+          selectedSubFacility={selectedSubFacility}
+          onSubFacilitySelect={setSelectedSubFacility}
+        />
+
+        {/* Booking Section */}
+        <BookingSection
+          loadingTimes={loadingTimes}
+          availableTimes={availableTimes}
+          selectedDate={selectedDate}
+          setSelectedDate={setSelectedDate}
+          selectedTimes={selectedTimes}
+          handleTimeSlotClick={handleTimeSlotClick}
+          getTimeRangeDisplay={getTimeRangeDisplay}
+          selectedSubFacility={selectedSubFacility}
+          calculateTotalPrice={calculateTotalPrice}
+          onCheckout={handleCheckout}
+        />
+
+        {/* Checkout Modal */}
+        <CheckoutModal
+          isOpen={showCheckout}
+          onClose={() => setShowCheckout(false)}
+          selectedSubFacility={selectedSubFacility}
+          selectedDate={selectedDate}
+          selectedTimes={selectedTimes}
+          getTimeRangeDisplay={getTimeRangeDisplay}
+          calculateTotalPrice={calculateTotalPrice}
+          customerDetails={customerDetails}
+          handleCustomerDetailsChange={handleCustomerDetailsChange}
+          paymentMethods={paymentMethods}
+          loadingPaymentMethods={loadingPaymentMethods}
+          selectedPaymentType={selectedPaymentType}
+          setSelectedPaymentType={setSelectedPaymentType}
+          selectedPaymentDetails={selectedPaymentDetails}
+          setSelectedPaymentDetails={setSelectedPaymentDetails}
+          submittingTransaction={submittingTransaction}
+          onSubmitTransaction={showPaymentConfirmationModal}
+        />
+
+        {/* Payment Confirmation Modal */}
+        <PaymentConfirmationModal
+          isOpen={showPaymentConfirmation}
+          onClose={() => setShowPaymentConfirmation(false)}
+          onConfirm={submitTransaction}
+          selectedSubFacility={selectedSubFacility}
+          selectedDate={selectedDate}
+          selectedTimes={selectedTimes}
+          getTimeRangeDisplay={getTimeRangeDisplay}
+          calculateTotalPrice={calculateTotalPrice}
+          customerDetails={customerDetails}
+          selectedPaymentType={selectedPaymentType}
+          selectedPaymentDetails={selectedPaymentDetails}
+          submittingTransaction={submittingTransaction}
+        />
+
+        {/* Promo Section */}
+        <PromoCarousel
+          promos={promos}
+          currentPromoIndex={currentPromoIndex}
+          nextPromo={nextPromo}
+          prevPromo={prevPromo}
+          setCurrentPromoIndex={setCurrentPromoIndex}
+        />
+        {/* Testimonial Section */}
+        <TestimonialCarousel
+          testimonials={testimonials}
+          currentTestimonialIndex={currentTestimonialIndex}
+          nextTestimonial={nextTestimonial}
+          prevTestimonial={prevTestimonial}
+          setCurrentTestimonialIndex={setCurrentTestimonialIndex}
+        />
         </div>
       )}
     </main>

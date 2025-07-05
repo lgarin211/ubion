@@ -69,7 +69,7 @@ export function FoodCourtSection({ data }: FoodCourtSectionProps) {
   // Function to fetch location for a single restaurant
   const fetchRestaurantLocation = async (restaurantId: number): Promise<string> => {
     try {
-      const apiUrl = `http://127.0.0.1:8000/api/menuresto/${restaurantId}`;
+      const apiUrl = `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/menuresto/${restaurantId}`;
       const response = await fetch(apiUrl);
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`);

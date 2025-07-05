@@ -62,7 +62,10 @@ export default function Home() {
       <GetToKnowSection data={data.data.component1} />
       <EventsSection data={data.data.component2} />
       <SportsExperienceSection data={data.data.component3} />
-      <FoodCourtSection data={data.data.component4} />
+      <FoodCourtSection data={data.data.component4?.map(item => ({
+        ...item,
+        image: item.img
+      }))} />
       <NewsletterSection />
     </main>
   )

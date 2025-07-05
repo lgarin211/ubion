@@ -19,7 +19,7 @@ interface Restaurant {
 interface FoodCourtSectionProps {
   data?: Array<{
     id: number;
-    img: string;
+    image: string;
     created_at: string;
     updated_at: string;
   }>;
@@ -45,23 +45,23 @@ export function FoodCourtSection({ data }: FoodCourtSectionProps) {
   const defaultRestaurants = [
     {
       id: 1,
-      img: "https://images.pexels.com/photos/1639557/pexels-photo-1639557.jpeg"
+      image: "https://images.pexels.com/photos/1639557/pexels-photo-1639557.jpeg"
     },
     {
       id: 2,
-      img: "https://images.pexels.com/photos/60616/fried-chicken-chicken-fried-crunchy-60616.jpeg"
+      image: "https://images.pexels.com/photos/60616/fried-chicken-chicken-fried-crunchy-60616.jpeg"
     },
     {
       id: 3,
-      img: "https://images.pexels.com/photos/1087906/pexels-photo-1087906.jpeg"
+      image: "https://images.pexels.com/photos/1087906/pexels-photo-1087906.jpeg"
     },
     {
       id: 4,
-      img: "https://images.pexels.com/photos/2098085/pexels-photo-2098085.jpeg"
+      image: "https://images.pexels.com/photos/2098085/pexels-photo-2098085.jpeg"
     },
     {
       id: 5,
-      img: "https://images.pexels.com/photos/884600/pexels-photo-884600.jpeg"
+      image: "https://images.pexels.com/photos/884600/pexels-photo-884600.jpeg"
     }
   ];
 
@@ -199,7 +199,7 @@ export function FoodCourtSection({ data }: FoodCourtSectionProps) {
             <div key={restaurant.id} className="bg-white p-6 rounded-lg shadow-sm text-center">
               <div className="w-20 h-20 mx-auto mb-4 rounded-full overflow-hidden">
                 <Image 
-                  src={getFullImageUrl(restaurant?.image || restaurant.img)}
+                  src={getFullImageUrl(restaurant.image)}
                   alt={`Restaurant ${restaurant.id}`}
                   width={80}
                   height={80}

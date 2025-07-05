@@ -19,7 +19,7 @@ interface Restaurant {
 interface FoodCourtSectionProps {
   data?: Array<{
     id: number;
-    image: string;
+    img: string;
     created_at: string;
     updated_at: string;
   }>;
@@ -199,7 +199,7 @@ export function FoodCourtSection({ data }: FoodCourtSectionProps) {
             <div key={restaurant.id} className="bg-white p-6 rounded-lg shadow-sm text-center">
               <div className="w-20 h-20 mx-auto mb-4 rounded-full overflow-hidden">
                 <Image 
-                  src={getFullImageUrl(restaurant?.image)}
+                  src={getFullImageUrl(restaurant?.image || restaurant.img)}
                   alt={`Restaurant ${restaurant.id}`}
                   width={80}
                   height={80}

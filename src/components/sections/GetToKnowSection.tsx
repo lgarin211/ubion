@@ -85,7 +85,9 @@ export function GetToKnowSection({ data }: GetToKnowSectionProps) {
     };
     
     // Set initial images only (no auto shuffle)
-    setDisplayedImages(getRandomImages());
+    setInterval(() => {
+          setDisplayedImages(getRandomImages());
+    }, 10000);
     
   }, [bannerImages, defaultGalleryImages]);
 

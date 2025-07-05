@@ -25,11 +25,6 @@ interface AvailableTime {
   hour: number;
 }
 
-interface SubFacilityDetail {
-  facility: FacilityDetail;
-  available_times: AvailableTime[];
-}
-
 export default function VenueDetailPage() {
   const params = useParams();
   const facilityId = params.id as string;

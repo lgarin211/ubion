@@ -12,7 +12,6 @@ interface GetToKnowSectionProps {
 
 export function GetToKnowSection({ data }: GetToKnowSectionProps) {
   const [displayedImages, setDisplayedImages] = useState<string[]>([]);
-  const [isAnimating, setIsAnimating] = useState(false);
 
   // Parse HTML content untuk mendapatkan text yang bersih
   const parseHtmlContent = (htmlString: string): string => {
@@ -86,11 +85,7 @@ export function GetToKnowSection({ data }: GetToKnowSectionProps) {
     };
     
     // Set initial images only (no auto shuffle)
-    setInterval(() => {
-      setDisplayedImages(getRandomImages());
-    }, 10000);
-    
-    // Auto shuffle is disabled - no interval timer
+    setDisplayedImages(getRandomImages());
     
   }, [bannerImages, defaultGalleryImages]);
 

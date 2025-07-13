@@ -14,18 +14,41 @@ interface PaymentInfo {
 export default function TransactionHistory() {
   const [history, setHistory] = useState<PaymentInfo[]>([]);
 
+
+  // Load from localStorage and check status from API
   useEffect(() => {
-    const data = localStorage.getItem("transaction_history");
-    if (data) {
-      console.log("Transaction history loaded from localStorage", data);
-      setHistory(JSON.parse(data));
-    }
+    const fetchAndUpdateStatus = async () => {
+      const data = localStorage.getItem("transaction_history");
+      if (!data) return;
+      const arr: PaymentInfo[] = JSON.parse(data);
+      // Cek status terbaru dari API untuk setiap transaksi
+      const updatedArr = await Promise.all(arr.map(async (trx) => {
+        try {
+          const res = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/payment-status?order_id=${trx.trxid}`);
+          if (res.ok) {
+            const result = await res.json();
+            // Jika status berubah, update
+            if (result.status && result.status !== trx.status) {
+              return { ...trx, status: result.status };
+            }
+          }
+        } catch {}
+        return trx;
+      }));
+      setHistory(updatedArr);
+      // Simpan update ke localStorage jika ada perubahan
+      if (JSON.stringify(arr) !== JSON.stringify(updatedArr)) {
+        localStorage.setItem("transaction_history", JSON.stringify(updatedArr));
+      }
+    };
+    fetchAndUpdateStatus();
   }, []);
 
   // Helper for status badge
   const statusColor = (status?: string) => {
     switch ((status || '').toLowerCase()) {
       case 'success': return 'bg-green-100 text-green-700 border-green-400';
+      case 'capture': return 'bg-green-100 text-green-700 border-green-400';
       case 'pending': return 'bg-yellow-100 text-yellow-800 border-yellow-400';
       case 'failed':
       case 'deny':

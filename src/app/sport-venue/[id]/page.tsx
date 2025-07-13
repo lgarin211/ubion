@@ -232,6 +232,21 @@ export default function VenueDetailPage() {
       history.unshift(historyItem);
       localStorage.setItem('transaction_history', JSON.stringify(history.slice(0, 50)));
 
+      // Send WhatsApp notification if phone and payment_url are available
+      const phone = customerDetails.phone?.replace(/[^0-9]/g, '');
+      const waNumber = phone.toString();
+      // if (waNumber && waNumber.startsWith('0')) {
+      //   waNumber = '08' + waNumber.slice(1); // Ensure starts with 08
+      // }
+      if (waNumber && result.payment_url) {
+        const message = encodeURIComponent(
+          `Selamat Pesanan Anda sudah di buat harap melakukan pembayaran pelunasan di link berikut \n\n${result.payment_url}\n\nalam kami Plaza Festival`
+        );
+        // Fire and forget, don't block UI
+        fetch(`https://caseoptheligaandnewligawkwkkw.progesio.my.id/send-message-get?no=${waNumber}&mass=${message}`)
+          .catch((err) => console.error('Failed to send WhatsApp notification:', err));
+      }
+
       if (response.ok) {
         // Check if the transaction was created successfully and has payment_url
         if (result.success && result.payment_url) {

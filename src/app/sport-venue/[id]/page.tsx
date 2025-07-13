@@ -198,9 +198,9 @@ export default function VenueDetailPage() {
           payment_type: selectedPaymentType,
           customer_details: customerDetails,
           ...(selectedPaymentDetails && {
-        [selectedPaymentType === 'bank_transfer' ? 'bank' : 
-          selectedPaymentType === 'e_wallet' ? 'ewallet_provider' : 
-          selectedPaymentType === 'convenience_store' ? 'store' : 'provider']: selectedPaymentDetails
+            [selectedPaymentType === 'bank_transfer' ? 'bank' : 
+              selectedPaymentType === 'e_wallet' ? 'ewallet_provider' : 
+              selectedPaymentType === 'convenience_store' ? 'store' : 'provider']: selectedPaymentDetails
           })
         }
       };
@@ -214,37 +214,40 @@ export default function VenueDetailPage() {
       });
 
       const result = await response.json();
-      
+
+      // Save transaction to history (all statuses)
+      const trxid = result.order_id || result.transaction_id || `trx_${Date.now()}`;
+      const historyItem = {
+        trxid,
+        amount: result.midtrans_response?.amount || calculateTotalPrice(),
+        method: selectedPaymentType,
+        status: result.transaction_status || result.status || (response.ok ? 'success' : 'failed'),
+        payment_url: result.payment_url,
+        date: new Date().toISOString(),
+      };
+      let history = [];
+      try {
+        history = JSON.parse(localStorage.getItem('transaction_history') || '[]');
+      } catch {}
+      history.unshift(historyItem);
+      localStorage.setItem('transaction_history', JSON.stringify(history.slice(0, 50)));
+
       if (response.ok) {
         // Check if the transaction was created successfully and has payment_url
         if (result.success && result.payment_url) {
           // Show success message with order details
           const orderMessage = `Transaction created successfully!\n\nOrder ID: ${result.order_id}\nTransaction ID: ${result.transaction_id}\nAmount: Rp. ${result.midtrans_response?.amount?.toLocaleString() || calculateTotalPrice().toLocaleString()}\n\nYou will be redirected to payment page.`;
-          
           alert(orderMessage);
-          
           // Reset form and close modals
           setShowPaymentConfirmation(false);
           setShowCheckout(false);
           setSelectedTimes([]);
           setSelectedPaymentType('');
           setSelectedPaymentDetails('');
-          
           // Open payment URL in a new tab/window
-          // You can change '_blank' to '_self' if you want to redirect in the same tab
           window.open(result.payment_url, '_blank');
-          
-          // Optional: Store transaction details in localStorage for tracking
-          localStorage.setItem('lastTransaction', JSON.stringify({
-            orderId: result.order_id,
-            transactionId: result.transaction_id,
-            amount: result.midtrans_response?.amount || calculateTotalPrice(),
-            snapToken: result.snap_token,
-            createdAt: new Date().toISOString()
-          }));
         } else {
           alert('Transaction submitted successfully!');
-          // Reset form and close modals
           setShowPaymentConfirmation(false);
           setShowCheckout(false);
           setSelectedTimes([]);

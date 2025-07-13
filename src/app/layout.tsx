@@ -31,7 +31,8 @@ export default function RootLayout({
                     { name: "About", href: "#" },
                     { name: "Tenants", href: "#" },
                     { name: "Events", href: "#" },
-                    { name: "Sport Venue", href: "/sport-venue" }
+                    { name: "Sport Venue", href: "/sport-venue" },
+                    { name: "Riwayat Transaksi", href: "/transaction-history" }
                   ].map((item) => (
                     <a
                       key={item.name}

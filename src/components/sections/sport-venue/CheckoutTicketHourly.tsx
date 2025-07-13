@@ -1,10 +1,5 @@
 import React from "react";
 
-interface TimeSlot {
-  time: string; // e.g. "14:00"
-  label?: string;
-  price: number;
-}
 
 interface FacilityDetail {
   id: number;

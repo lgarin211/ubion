@@ -11,7 +11,7 @@ import { CheckoutTicketHourly } from "@/components/sections/sport-venue/Checkout
 import { PaymentConfirmationModal } from "@/components/sections/sport-venue/PaymentConfirmationModal";
 import { PromoCarousel } from "@/components/sections/sport-venue/PromoCarousel";
 import { TestimonialCarousel } from "@/components/sections/sport-venue/TestimonialCarousel";
-import { url } from "inspector";
+
 
 interface FacilityDetail {
   id: number;
@@ -136,11 +136,11 @@ export default function VenueDetailPage() {
   // Handle checkout button click
   // Listen for event from CheckoutTicketHourly to set selectedTimes
   useEffect(() => {
-    const handler = (e: any) => {
+    const handler = (e: CustomEvent<string[]>) => {
       setSelectedTimes(e.detail);
     };
-    window.addEventListener('setSelectedTimesForTicket', handler);
-    return () => window.removeEventListener('setSelectedTimesForTicket', handler);
+    window.addEventListener('setSelectedTimesForTicket', handler as EventListener);
+    return () => window.removeEventListener('setSelectedTimesForTicket', handler as EventListener);
   }, []);
 
   const handleCheckout = async () => {

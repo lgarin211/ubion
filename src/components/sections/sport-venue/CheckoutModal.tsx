@@ -59,6 +59,8 @@ interface CheckoutModalProps {
   setSelectedPaymentDetails: (details: string) => void;
   submittingTransaction: boolean;
   onSubmitTransaction: () => void;
+  ticketCount?: number;
+  ticketTotal?: number;
 }
 
 export function CheckoutModal({
@@ -79,6 +81,8 @@ export function CheckoutModal({
   setSelectedPaymentDetails,
   submittingTransaction,
   onSubmitTransaction,
+  ticketCount,
+  ticketTotal,
 }: CheckoutModalProps) {
   if (!isOpen) return null;
 
@@ -103,8 +107,17 @@ export function CheckoutModal({
             <div className="space-y-2">
               <div><strong>Facility:</strong> {selectedSubFacility?.nama_fasilitas}</div>
               <div><strong>Date:</strong> {selectedDate}</div>
-              <div><strong>Time:</strong> {getTimeRangeDisplay()} ({selectedTimes.length} hour{selectedTimes.length > 1 ? 's' : ''})</div>
-              <div><strong>Total:</strong> Rp. {calculateTotalPrice().toLocaleString()}</div>
+              {typeof ticketCount === 'number' ? (
+                <>
+                  <div><strong>Jumlah Tiket:</strong> {ticketCount}</div>
+                  <div><strong>Total:</strong> Rp. {(ticketTotal || 0).toLocaleString()}</div>
+                </>
+              ) : (
+                <>
+                  <div><strong>Time:</strong> {getTimeRangeDisplay()} ({selectedTimes.length} hour{selectedTimes.length > 1 ? 's' : ''})</div>
+                  <div><strong>Total:</strong> Rp. {calculateTotalPrice().toLocaleString()}</div>
+                </>
+              )}
             </div>
           </div>
 

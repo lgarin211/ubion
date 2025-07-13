@@ -7,9 +7,11 @@ import { ImageGallery } from "@/components/sections/sport-venue/ImageGallery";
 import { VenueInfo } from "@/components/sections/sport-venue/VenueInfo";
 import { BookingSection } from "@/components/sections/sport-venue/BookingSection";
 import { CheckoutModal } from "@/components/sections/sport-venue/CheckoutModal";
+import { CheckoutTicketHourly } from "@/components/sections/sport-venue/CheckoutTicketHourly";
 import { PaymentConfirmationModal } from "@/components/sections/sport-venue/PaymentConfirmationModal";
 import { PromoCarousel } from "@/components/sections/sport-venue/PromoCarousel";
 import { TestimonialCarousel } from "@/components/sections/sport-venue/TestimonialCarousel";
+import { url } from "inspector";
 
 interface FacilityDetail {
   id: number;
@@ -57,6 +59,8 @@ interface PaymentMethods {
 }
 
 export default function VenueDetailPage() {
+  // Ticket count state for hourly ticket purchase (facilityId==1)
+  const [ticketCount, setTicketCount] = useState(0);
   const params = useParams();
   const facilityId = params.id as string;
   
@@ -130,6 +134,15 @@ export default function VenueDetailPage() {
   };
 
   // Handle checkout button click
+  // Listen for event from CheckoutTicketHourly to set selectedTimes
+  useEffect(() => {
+    const handler = (e: any) => {
+      setSelectedTimes(e.detail);
+    };
+    window.addEventListener('setSelectedTimesForTicket', handler);
+    return () => window.removeEventListener('setSelectedTimesForTicket', handler);
+  }, []);
+
   const handleCheckout = async () => {
     setShowCheckout(true);
     if (!paymentMethods) {
@@ -170,19 +183,24 @@ export default function VenueDetailPage() {
     setSubmittingTransaction(true);
     try {
       const baseUrl = getBaseUrl();
+      // Only use the base URL (protocol + host) for urlformRq
+      const { protocol, host } = window.location;
+      const baseUrlOnly = `${protocol}//${host}`;
+
       const transactionData = {
         idsubfacility: selectedSubFacility!.id,
         time_start: selectedTimes,
         price: calculateTotalPrice(),
         transactionpoin: selectedPaymentType,
         date_start: selectedDate,
+        urlformRq: baseUrlOnly,
         detail: {
           payment_type: selectedPaymentType,
           customer_details: customerDetails,
           ...(selectedPaymentDetails && {
-            [selectedPaymentType === 'bank_transfer' ? 'bank' : 
-              selectedPaymentType === 'e_wallet' ? 'ewallet_provider' : 
-              selectedPaymentType === 'convenience_store' ? 'store' : 'provider']: selectedPaymentDetails
+        [selectedPaymentType === 'bank_transfer' ? 'bank' : 
+          selectedPaymentType === 'e_wallet' ? 'ewallet_provider' : 
+          selectedPaymentType === 'convenience_store' ? 'store' : 'provider']: selectedPaymentDetails
           })
         }
       };
@@ -249,12 +267,52 @@ export default function VenueDetailPage() {
       try {
         const baseUrl = getBaseUrl();
         const response = await fetch(`${baseUrl}/api/getlistFasility/${facilityId}`);
-        const data = await response.json();
+        let data = await response.json();
+        // Fix typo and parse sf_additional if exists
+        data.forEach((facility: FacilityDetail) => {
+          if (facility.sf_additional) {
+            facility.sf_additional = JSON.parse(facility.sf_additional);
+          }
+          if (facility.f_additional) {
+            facility.f_additional = JSON.parse(facility.f_additional);
+          }
+        });
+
+        // Jika facilityId adalah '1', hanya gunakan sub-fasilitas yang sf_additional (setelah di-parse) memiliki start dan end yang mencakup waktu sekarang
+        console.log('Facility ID:', facilityId);
+        console.log('Original facility data:', data);
+        if (facilityId == "1") {
+          const now = new Date();
+          const nowMinutes = now.getHours() * 60 + now.getMinutes();
+          const tempdata: FacilityDetail[] = data.filter((facility: FacilityDetail) => {
+            if (!facility.sf_additional) return false;
+            const sf = facility.sf_additional as { start?: string; end?: string };
+            if (!sf.start || !sf.end) return false;
+            // Normalisasi format jam (titik ke titik dua)
+            const start = sf.start.replace('.', ':');
+            const end = sf.end.replace('.', ':');
+            const [startHour, startMinute] = start.split(':').map(Number);
+            const [endHour, endMinute] = end.split(':').map(Number);
+            const startTotal = startHour * 60 + startMinute;
+            const endTotal = endHour * 60 + endMinute;
+            // Support range melewati tengah malam
+            if (endTotal < startTotal) {
+              return nowMinutes >= startTotal || nowMinutes <= endTotal;
+            } else {
+              return nowMinutes >= startTotal && nowMinutes <= endTotal;
+            }
+          });
+          console.log('Filtered facility data:', tempdata);
+          data = tempdata;
+        }
+
+        console.log('Parsed facility data:', data);
         setFacilityData(data);
-        
         // Set the first facility as default selected sub-facility
         if (data.length > 0) {
           setSelectedSubFacility(data[0]);
+        } else {
+          setSelectedSubFacility(null);
         }
       } catch (error) {
         console.error('Error fetching facility data:', error);
@@ -564,18 +622,28 @@ export default function VenueDetailPage() {
         />
 
         {/* Booking Section */}
-        <BookingSection
-          loadingTimes={loadingTimes}
-          availableTimes={availableTimes}
-          selectedDate={selectedDate}
-          setSelectedDate={setSelectedDate}
-          selectedTimes={selectedTimes}
-          handleTimeSlotClick={handleTimeSlotClick}
-          getTimeRangeDisplay={getTimeRangeDisplay}
-          selectedSubFacility={selectedSubFacility}
-          calculateTotalPrice={calculateTotalPrice}
-          onCheckout={handleCheckout}
-        />
+        {facilityId == "1" ? (
+          <CheckoutTicketHourly
+            pricePerTicket={selectedSubFacility?.pricehours || 0}
+            selectedSubFacility={selectedSubFacility}
+            ticketCount={ticketCount}
+            setTicketCount={setTicketCount}
+            onCheckout={handleCheckout}
+          />
+        ) : (
+          <BookingSection
+            loadingTimes={loadingTimes}
+            availableTimes={availableTimes}
+            selectedDate={selectedDate}
+            setSelectedDate={setSelectedDate}
+            selectedTimes={selectedTimes}
+            handleTimeSlotClick={handleTimeSlotClick}
+            getTimeRangeDisplay={getTimeRangeDisplay}
+            selectedSubFacility={selectedSubFacility}
+            calculateTotalPrice={calculateTotalPrice}
+            onCheckout={handleCheckout}
+          />
+        )}
 
         {/* Checkout Modal */}
         <CheckoutModal
@@ -596,6 +664,8 @@ export default function VenueDetailPage() {
           setSelectedPaymentDetails={setSelectedPaymentDetails}
           submittingTransaction={submittingTransaction}
           onSubmitTransaction={showPaymentConfirmationModal}
+          ticketCount={facilityId == "1" ? ticketCount : undefined}
+          ticketTotal={facilityId == "1" ? ticketCount * (selectedSubFacility?.pricehours || 0) : undefined}
         />
 
         {/* Payment Confirmation Modal */}

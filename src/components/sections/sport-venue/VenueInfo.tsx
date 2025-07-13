@@ -25,6 +25,7 @@ interface VenueInfoProps {
   onSubFacilitySelect: (facility: FacilityDetail) => void;
 }
 
+
 export function VenueInfo({
   venue,
   mainFacility,
@@ -32,6 +33,12 @@ export function VenueInfo({
   selectedSubFacility,
   onSubFacilitySelect,
 }: VenueInfoProps) {
+  console.log("VenueInfo Props:", {
+    venue,
+    mainFacility,
+    facilityData,
+    selectedSubFacility,
+  });
   return (
     <>
       {/* Venue Info */}

@@ -5,7 +5,7 @@ import "./globals.css"
 const inter = Inter({ subsets: ["latin"] })
 
 export const metadata: Metadata = {
-  title: "Plaza Festival",
+  title: "Plaza Festival aaaa",
   description: "Your premiere destination for dining, shopping and entertainment",
 }
 
@@ -23,7 +23,7 @@ export default function RootLayout({
           <div className="container mx-auto px-6">
             <div className="flex items-center justify-between h-16">
               <div className="flex-shrink-0">
-                <span className="text-xl font-bold">Plaza Festival</span>
+                <img src="/plazalogo.png" alt="Plaza Festival Logo" className="h-10" />
               </div>
               <div className="hidden md:block">
                 <div className="ml-10 flex items-baseline space-x-4">

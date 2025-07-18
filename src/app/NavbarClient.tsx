@@ -1,10 +1,11 @@
 "use client"
 import { useState, useEffect } from "react"
+import { BookingModal } from "@/components/ui/booking-modal"
 
 const navItems = [
-  { name: "About", href: "#" },
-  { name: "Tenants", href: "#" },
-  { name: "Events", href: "#" },
+  { name: "About", href: "/" },
+  { name: "Tenants", href: "/" },
+  { name: "Events", href: "/" },
   { name: "Sport Venue", href: "/sport-venue" },
   { name: "Riwayat Transaksi", href: "/transaction-history" }
 ];
@@ -12,6 +13,7 @@ const navItems = [
 export default function NavbarClient() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [isScrolled, setIsScrolled] = useState(false);
+  const [bookingModalOpen, setBookingModalOpen] = useState(false);
 
   // Handle scroll effect
   useEffect(() => {
@@ -35,12 +37,13 @@ export default function NavbarClient() {
   }, [mobileMenuOpen]);
 
   return (
+    <>
     <nav className={`fixed w-full z-50 transition-all duration-300 ${
       isScrolled 
         ? 'bg-white shadow-md' 
         : 'bg-white/95 backdrop-blur-sm'
     }`}>
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 cobix">
         <div className="flex items-center justify-between h-16">
           {/* Logo */}
           <div className="flex-shrink-0">
@@ -63,12 +66,12 @@ export default function NavbarClient() {
                   {item.name}
                 </a>
               ))}
-              <a
-                href="#"
+              <button
+                onClick={() => setBookingModalOpen(true)}
                 className="bg-[#8BC34A] text-white px-6 py-2 rounded-md text-sm font-medium hover:bg-[#7CB342] transition-colors duration-200"
               >
                 Book Now
-              </a>
+              </button>
             </div>
           </div>
           
@@ -90,9 +93,10 @@ export default function NavbarClient() {
           </div>
         </div>
       </div>
-      
-      {/* Mobile menu overlay */}
-      <div className={`fixed inset-0 z-50 md:hidden transition-all duration-300 ease-in-out ${
+
+    </nav>
+     {/* Mobile menu overlay */}
+      <div className={`cobix fixed inset-0 z-50 md:hidden transition-all duration-300 ease-in-out ${
         mobileMenuOpen 
           ? 'opacity-100 visible' 
           : 'opacity-0 invisible pointer-events-none'
@@ -143,10 +147,12 @@ export default function NavbarClient() {
             
             {/* CTA Button */}
             <div className="mt-8 pt-6 border-t border-gray-200">
-              <a
-                href="#"
+              <button
+                onClick={() => {
+                  setBookingModalOpen(true);
+                  setMobileMenuOpen(false);
+                }}
                 className="block w-full bg-[#8BC34A] text-white text-center px-4 py-4 rounded-lg font-bold text-lg hover:bg-[#7CB342] transition-all duration-300 transform hover:scale-105 shadow-lg"
-                onClick={() => setMobileMenuOpen(false)}
               >
                 <span className="flex items-center justify-center">
                   <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -154,11 +160,16 @@ export default function NavbarClient() {
                   </svg>
                   Book Now
                 </span>
-              </a>
+              </button>
             </div>
           </div>
         </div>
       </div>
-    </nav>
+     {/* Booking Modal */}
+     <BookingModal 
+        isOpen={bookingModalOpen} 
+        onClose={() => setBookingModalOpen(false)} 
+      />
+      </>
   );
 }

@@ -38,6 +38,8 @@ interface PaymentConfirmationModalProps {
   selectedPaymentType: string;
   selectedPaymentDetails: string;
   submittingTransaction: boolean;
+  ticketCount?: number;
+  facilityId?: string;
 }
 
 export function PaymentConfirmationModal({
@@ -53,6 +55,8 @@ export function PaymentConfirmationModal({
   selectedPaymentType,
   selectedPaymentDetails,
   submittingTransaction,
+  ticketCount,
+  facilityId,
 }: PaymentConfirmationModalProps) {
   if (!isOpen) return null;
 
@@ -99,22 +103,48 @@ export function PaymentConfirmationModal({
                 <span className="font-medium">Tanggal:</span>
                 <span>{selectedDate}</span>
               </div>
-              <div className="flex justify-between">
-                <span className="font-medium">Waktu:</span>
-                <span>{getTimeRangeDisplay()} ({selectedTimes.length} jam)</span>
-              </div>
-              <div className="flex justify-between">
-                <span className="font-medium">Harga per jam:</span>
-                <span>Rp. {selectedSubFacility?.pricehours.toLocaleString()}</span>
-              </div>
-              <div className="flex justify-between">
-                <span className="font-medium">Subtotal:</span>
-                <span>Rp. {((selectedSubFacility?.pricehours || 0) * selectedTimes.length).toLocaleString()}</span>
-              </div>
-              <div className="flex justify-between text-green-600">
-                <span className="font-medium">Diskon (10%):</span>
-                <span>- Rp. {(((selectedSubFacility?.pricehours || 0) * selectedTimes.length) * 0.1).toLocaleString()}</span>
-              </div>
+              
+              {/* Show different content based on facility type */}
+              {facilityId === "1" && ticketCount ? (
+                <>
+                  <div className="flex justify-between">
+                    <span className="font-medium">Jumlah Tiket:</span>
+                    <span>{ticketCount} tiket</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="font-medium">Harga per tiket:</span>
+                    <span>Rp. {selectedSubFacility?.pricehours.toLocaleString()}</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="font-medium">Subtotal:</span>
+                    <span>Rp. {((selectedSubFacility?.pricehours || 0) * ticketCount).toLocaleString()}</span>
+                  </div>
+                  <div className="flex justify-between text-green-600">
+                    <span className="font-medium">Diskon (10%):</span>
+                    <span>- Rp. {(((selectedSubFacility?.pricehours || 0) * ticketCount) * 0.1).toLocaleString()}</span>
+                  </div>
+                </>
+              ) : (
+                <>
+                  <div className="flex justify-between">
+                    <span className="font-medium">Waktu:</span>
+                    <span>{getTimeRangeDisplay()} ({selectedTimes.length} jam)</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="font-medium">Harga per jam:</span>
+                    <span>Rp. {selectedSubFacility?.pricehours.toLocaleString()}</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="font-medium">Subtotal:</span>
+                    <span>Rp. {((selectedSubFacility?.pricehours || 0) * selectedTimes.length).toLocaleString()}</span>
+                  </div>
+                  <div className="flex justify-between text-green-600">
+                    <span className="font-medium">Diskon (10%):</span>
+                    <span>- Rp. {(((selectedSubFacility?.pricehours || 0) * selectedTimes.length) * 0.1).toLocaleString()}</span>
+                  </div>
+                </>
+              )}
+              
               <hr className="my-2" />
               <div className="flex justify-between text-lg font-bold">
                 <span>Total:</span>

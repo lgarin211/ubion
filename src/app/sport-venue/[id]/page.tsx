@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { useParams } from "next/navigation";
+import Swal from "sweetalert2";
 import { parseAndFormatImageList, getBaseUrl } from "@/lib/imageUtils";
 import { ImageGallery } from "@/components/sections/sport-venue/ImageGallery";
 import { VenueInfo } from "@/components/sections/sport-venue/VenueInfo";
@@ -161,17 +162,35 @@ export default function VenueDetailPage() {
   // Show payment confirmation modal
   const showPaymentConfirmationModal = () => {
     if (!selectedSubFacility || selectedTimes.length === 0) {
-      alert('Please select a facility and time slots');
+      Swal.fire({
+        icon: 'warning',
+        title: 'Pilih Fasilitas dan Waktu',
+        text: 'Silakan pilih fasilitas dan slot waktu terlebih dahulu',
+        confirmButtonText: 'OK',
+        confirmButtonColor: '#14b8a6'
+      });
       return;
     }
 
     if (!customerDetails.first_name || !customerDetails.email || !customerDetails.phone) {
-      alert('Please fill in required customer details');
+      Swal.fire({
+        icon: 'warning',
+        title: 'Data Customer Belum Lengkap',
+        text: 'Silakan lengkapi nama, email, dan nomor telepon terlebih dahulu',
+        confirmButtonText: 'OK',
+        confirmButtonColor: '#14b8a6'
+      });
       return;
     }
 
     if (!selectedPaymentType) {
-      alert('Please select a payment method');
+      Swal.fire({
+        icon: 'warning',
+        title: 'Pilih Metode Pembayaran',
+        text: 'Silakan pilih metode pembayaran terlebih dahulu',
+        confirmButtonText: 'OK',
+        confirmButtonColor: '#14b8a6'
+      });
       return;
     }
 
@@ -251,8 +270,22 @@ export default function VenueDetailPage() {
         // Check if the transaction was created successfully and has payment_url
         if (result.success && result.payment_url) {
           // Show success message with order details
-          const orderMessage = `Transaction created successfully!\n\nOrder ID: ${result.order_id}\nTransaction ID: ${result.transaction_id}\nAmount: Rp. ${result.midtrans_response?.amount?.toLocaleString() || calculateTotalPrice().toLocaleString()}\n\nYou will be redirected to payment page.`;
-          alert(orderMessage);
+          await Swal.fire({
+            icon: 'success',
+            title: 'Transaksi Berhasil Dibuat!',
+            html: `
+              <div class="text-left">
+                <p><strong>Order ID:</strong> ${result.order_id}</p>
+                <p><strong>Transaction ID:</strong> ${result.transaction_id}</p>
+                <p><strong>Amount:</strong> Rp. ${result.midtrans_response?.amount?.toLocaleString() || calculateTotalPrice().toLocaleString()}</p>
+                <br>
+                <p class="text-sm text-gray-600">Anda akan diarahkan ke halaman pembayaran</p>
+              </div>
+            `,
+            confirmButtonText: 'Lanjut ke Pembayaran',
+            confirmButtonColor: '#14b8a6',
+            allowOutsideClick: false
+          });
           // Reset form and close modals
           setShowPaymentConfirmation(false);
           setShowCheckout(false);
@@ -260,9 +293,15 @@ export default function VenueDetailPage() {
           setSelectedPaymentType('');
           setSelectedPaymentDetails('');
           // Open payment URL in a new tab/window
-          window.open(result.payment_url, '_blank');
+          window.location.replace(result.payment_url);
         } else {
-          alert('Transaction submitted successfully!');
+          await Swal.fire({
+            icon: 'success',
+            title: 'Transaksi Berhasil!',
+            text: 'Transaksi Anda telah berhasil disubmit',
+            confirmButtonText: 'OK',
+            confirmButtonColor: '#14b8a6'
+          });
           setShowPaymentConfirmation(false);
           setShowCheckout(false);
           setSelectedTimes([]);
@@ -270,11 +309,23 @@ export default function VenueDetailPage() {
           setSelectedPaymentDetails('');
         }
       } else {
-        alert(`Transaction failed: ${result.message || 'Unknown error'}`);
+        await Swal.fire({
+          icon: 'error',
+          title: 'Transaksi Gagal',
+          text: result.message || 'Terjadi kesalahan yang tidak diketahui',
+          confirmButtonText: 'OK',
+          confirmButtonColor: '#14b8a6'
+        });
       }
     } catch (error) {
       console.error('Error submitting transaction:', error);
-      alert('Failed to submit transaction. Please try again.');
+      await Swal.fire({
+        icon: 'error',
+        title: 'Kesalahan Sistem',
+        text: 'Terjadi kesalahan saat memproses transaksi. Silakan coba lagi.',
+        confirmButtonText: 'OK',
+        confirmButtonColor: '#14b8a6'
+      });
     } finally {
       setSubmittingTransaction(false);
     }
@@ -432,7 +483,17 @@ export default function VenueDetailPage() {
 
   // Calculate total price
   const calculateTotalPrice = (): number => {
-    if (!selectedSubFacility || selectedTimes.length === 0) return 0;
+    if (!selectedSubFacility) return 0;
+    
+    // For facility ID 1 (ticket booking), use ticketCount instead of selectedTimes
+    if (facilityId == "1") {
+      if (ticketCount === 0) return 0;
+      const basePrice = selectedSubFacility.pricehours * ticketCount;
+      return basePrice * 0.9; // Apply 10% discount
+    }
+    
+    // For other facilities, use time slots
+    if (selectedTimes.length === 0) return 0;
     const basePrice = selectedSubFacility.pricehours * selectedTimes.length;
     return basePrice * 0.9; // Apply 10% discount
   };
@@ -700,6 +761,8 @@ export default function VenueDetailPage() {
           selectedPaymentType={selectedPaymentType}
           selectedPaymentDetails={selectedPaymentDetails}
           submittingTransaction={submittingTransaction}
+          ticketCount={facilityId === "1" ? ticketCount : undefined}
+          facilityId={facilityId}
         />
 
         {/* Promo Section */}

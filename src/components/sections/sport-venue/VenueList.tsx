@@ -55,13 +55,12 @@ export function VenueList() {
 				) : (
 					<Swiper
 						modules={[Navigation, Autoplay]}
-						navigation
-						autoplay={{ delay: 3000, disableOnInteraction: false }}
+						autoplay={{ delay: 2000, disableOnInteraction: false }}
 						loop={true}
-						spaceBetween={24}
-						slidesPerView={2}
+						spaceBetween={25}
+						slidesPerView={1.1}
 						breakpoints={{
-							640: { slidesPerView: 1 },
+							100: { slidesPerView: 1 },
 							1024: { slidesPerView: 3 },
 						}}
 						className="!pb-8"

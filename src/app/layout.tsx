@@ -1,6 +1,10 @@
+
+
+
 import type { Metadata } from "next"
 import { Inter } from "next/font/google"
 import "./globals.css"
+import NavbarClient from "./NavbarClient";
 
 const inter = Inter({ subsets: ["latin"] })
 
@@ -9,54 +13,19 @@ export const metadata: Metadata = {
   description: "Your premiere destination for dining, shopping and entertainment",
 }
 
+
 export default function RootLayout({
   children,
-}: Readonly<{
-  children: React.ReactNode
-}>) {
+}: Readonly<{ children: React.ReactNode }>) {
   return (
     <html lang="en">
       <head></head>
       <body className={inter.className}>
         {/* Navigation */}
-        <nav className="fixed w-full z-50 bg-white/95 backdrop-blur supports-[backdrop-filter]:bg-white/60">
-          <div className="container mx-auto px-6">
-            <div className="flex items-center justify-between h-16">
-              <div className="flex-shrink-0">
-                <img src="/plazalogo.png" alt="Plaza Festival Logo" className="h-10" />
-              </div>
-              <div className="hidden md:block">
-                <div className="ml-10 flex items-baseline space-x-4">
-                  {[
-                    { name: "About", href: "#" },
-                    { name: "Tenants", href: "#" },
-                    { name: "Events", href: "#" },
-                    { name: "Sport Venue", href: "/sport-venue" },
-                    { name: "Riwayat Transaksi", href: "/transaction-history" }
-                  ].map((item) => (
-                    <a
-                      key={item.name}
-                      href={item.href}
-                      className="text-gray-800 hover:text-gray-600 px-3 py-2 rounded-md text-sm font-medium"
-                    >
-                      {item.name}
-                    </a>
-                  ))}
-                  <a
-                    href="#"
-                    className="bg-[#8BC34A] text-white px-4 py-2 rounded-md text-sm font-medium hover:bg-[#7CB342]"
-                  >
-                    Book Now
-                  </a>
-                </div>
-              </div>
-            </div>
-          </div>
-        </nav>
+        <NavbarClient />
 
         {children}
 
-        {/* Footer */}
         <footer className="bg-white border-t">
           <div className="container mx-auto px-6 py-12">
             <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
@@ -118,5 +87,5 @@ export default function RootLayout({
         </footer>
       </body>
     </html>
-  )
+  );
 }

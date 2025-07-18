@@ -71,7 +71,15 @@ export function BookingSection({
             
             <div>
               <div className="mb-3 text-sm text-gray-600">
-                Click time slots to select. You can select multiple consecutive hours.
+                <div className="flex items-center gap-2 mb-2">
+                  <span role="img" aria-label="info">ℹ️</span>
+                  <span className="font-semibold text-blue-600">Persyaratan Booking:</span>
+                </div>
+                <ul className="list-disc list-inside space-y-1 text-xs text-gray-600 ml-6">
+                  <li>Pilih minimal <strong>2 jam berturut-turut</strong></li>
+                  <li>Klik slot waktu untuk memilih/membatalkan</li>
+                  <li>Waktu yang dipilih harus berurutan tanpa jeda</li>
+                </ul>
               </div>
               <div className="grid grid-cols-3 md:grid-cols-4 gap-2 max-h-64 overflow-y-auto">
                 {availableTimes.map((timeSlot) => (
@@ -90,9 +98,28 @@ export function BookingSection({
                 ))}
               </div>
               {selectedTimes.length > 0 && (
-                <div className="mt-3 p-2 bg-green-100 rounded text-sm">
-                  <strong>Selected:</strong> {getTimeRangeDisplay()} 
-                  <span className="text-gray-600"> ({selectedTimes.length} hour{selectedTimes.length > 1 ? 's' : ''})</span>
+                <div className={`mt-3 p-3 rounded-lg text-sm ${
+                  selectedTimes.length >= 2 
+                    ? 'bg-green-100 border border-green-200' 
+                    : 'bg-yellow-100 border border-yellow-200'
+                }`}>
+                  <div className="flex items-center gap-2 mb-1">
+                    <span role="img" aria-label={selectedTimes.length >= 2 ? "check" : "warning"}>
+                      {selectedTimes.length >= 2 ? "✅" : "⚠️"}
+                    </span>
+                    <strong>
+                      {selectedTimes.length >= 2 ? "Waktu Terpilih:" : "Perhatian:"}
+                    </strong>
+                  </div>
+                  <div className={selectedTimes.length >= 2 ? "text-green-700" : "text-yellow-700"}>
+                    {getTimeRangeDisplay()} 
+                    <span className="ml-1">({selectedTimes.length} jam)</span>
+                  </div>
+                  {selectedTimes.length < 2 && (
+                    <div className="text-xs text-yellow-600 mt-1">
+                      Anda perlu memilih minimal 2 jam berturut-turut untuk melanjutkan booking.
+                    </div>
+                  )}
                 </div>
               )}
             </div>
@@ -135,8 +162,18 @@ export function BookingSection({
                   className="border rounded px-2 py-1 w-full bg-gray-50" 
                 />
                 {selectedTimes.length > 0 && (
-                  <div className="text-xs text-gray-600 mt-1">
-                    Duration: {selectedTimes.length} hour{selectedTimes.length > 1 ? 's' : ''}
+                  <div className={`text-xs mt-1 ${
+                    selectedTimes.length >= 2 ? 'text-green-600' : 'text-yellow-600'
+                  }`}>
+                    <div className="flex items-center gap-1">
+                      <span role="img" aria-label={selectedTimes.length >= 2 ? "check" : "warning"}>
+                        {selectedTimes.length >= 2 ? "✅" : "⚠️"}
+                      </span>
+                      <span>
+                        Durasi: {selectedTimes.length} jam 
+                        {selectedTimes.length < 2 && " (minimal 2 jam)"}
+                      </span>
+                    </div>
                   </div>
                 )}
               </div>
@@ -148,14 +185,19 @@ export function BookingSection({
               
               <Button 
                 type="button"
-                className="bg-teal-400 text-black hover:bg-teal-500"
-                disabled={selectedTimes.length === 0 || !selectedDate}
+                className="bg-teal-400 text-black hover:bg-teal-500 disabled:opacity-50 disabled:cursor-not-allowed"
+                disabled={selectedTimes.length < 2 || !selectedDate}
                 onClick={(e) => {
                   e.preventDefault();
                   onCheckout();
                 }}
               >
-                {selectedTimes.length === 0 ? 'Select Time First' : 'Submit Payment'}
+                {selectedTimes.length === 0 
+                  ? 'Pilih Waktu Terlebih Dahulu' 
+                  : selectedTimes.length < 2 
+                  ? `Pilih ${2 - selectedTimes.length} Jam Lagi (Min. 2 Jam)`
+                  : 'Submit Payment'
+                }
               </Button>
             </form>
           </div>

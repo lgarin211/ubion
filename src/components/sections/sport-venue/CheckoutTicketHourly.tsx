@@ -15,7 +15,7 @@ interface FacilityDetail {
 }
 
 interface CheckoutTicketHourlyProps {
-  onCheckout: (selected: { time: string; count: number }[], total: number) => void;
+  onCheckout: (selected: { time: string; count: number }[], total: number, bookingDate?: string) => void;
   pricePerTicket: number;
   selectedSubFacility?: FacilityDetail | null;
   ticketCount: number;
@@ -31,6 +31,11 @@ export const CheckoutTicketHourly: React.FC<CheckoutTicketHourlyProps> = ({
   setTicketCount
 }) => {
 
+  const [bookingDate, setBookingDate] = React.useState<string>('');
+  
+  // Set minimum date to today
+  const today = new Date().toISOString().split('T')[0];
+
   const total = ticketCount * pricePerTicket;
 
   return (
@@ -41,6 +46,22 @@ export const CheckoutTicketHourly: React.FC<CheckoutTicketHourlyProps> = ({
           <span role="img" aria-label="ticket">🎟️</span> Pesan Tiket
         </h2>
         <div className="flex flex-col gap-4 flex-1 justify-center">
+          {/* Date Input */}
+          <label className="flex flex-col gap-2">
+            <span className="text-lg font-medium flex items-center gap-2">
+              <span role="img" aria-label="calendar">📅</span> Tanggal Booking
+            </span>
+            <input
+              type="date"
+              value={bookingDate}
+              onChange={(e) => setBookingDate(e.target.value)}
+              min={today}
+              className="px-4 py-3 border-2 border-green-200 rounded-xl focus:border-green-400 focus:outline-none text-lg font-medium"
+              required
+            />
+          </label>
+          
+          {/* Ticket Count */}
           <label className="flex items-center justify-between text-lg font-medium">
             <span>Jumlah Tiket</span>
             <div className="flex items-center gap-2">
@@ -68,10 +89,10 @@ export const CheckoutTicketHourly: React.FC<CheckoutTicketHourlyProps> = ({
         </div>
         <button
           className="w-full mt-8 bg-gradient-to-r from-green-500 to-emerald-600 text-white py-3 rounded-xl font-bold text-lg shadow-md hover:from-green-600 hover:to-emerald-700 transition disabled:opacity-50"
-          disabled={ticketCount === 0}
+          disabled={ticketCount === 0 || !bookingDate}
           onClick={() => {
             window.dispatchEvent(new CustomEvent('setSelectedTimesForTicket', { detail: ['TIKET'] }));
-            onCheckout([{ time: '', count: ticketCount }], total);
+            onCheckout([{ time: '', count: ticketCount }], total, bookingDate);
           }}
         >
           <span role="img" aria-label="cart">🛒</span> Checkout
@@ -99,6 +120,24 @@ export const CheckoutTicketHourly: React.FC<CheckoutTicketHourlyProps> = ({
             <div className="font-bold text-lg">Rp. {pricePerTicket.toLocaleString()} <span className="text-sm font-normal">/tiket</span></div>
           </div>
         )}
+        
+        {/* Booking Date Display */}
+        {bookingDate && (
+          <div className="mb-4 p-3 bg-blue-50 rounded-xl border border-blue-200">
+            <div className="text-blue-700 font-medium flex items-center gap-2">
+              <span role="img" aria-label="calendar">📅</span> Tanggal Booking: 
+              <span className="font-bold">
+                {new Date(bookingDate).toLocaleDateString('id-ID', {
+                  weekday: 'long',
+                  year: 'numeric',
+                  month: 'long',
+                  day: 'numeric'
+                })}
+              </span>
+            </div>
+          </div>
+        )}
+        
         <div className="text-green-700 text-base mb-2 flex items-center gap-2">
           <span role="img" aria-label="promo">💸</span> Promo: <span className="font-semibold">10% discount available</span>
         </div>

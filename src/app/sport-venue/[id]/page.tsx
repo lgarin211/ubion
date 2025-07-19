@@ -25,6 +25,11 @@ interface FacilityDetail {
   f_type: string;
   f_additional: string | null;
   sf_additional: string | null;
+  var?: {
+    additonaltime?: string[];
+    additonalday?: { [key: string]: string };
+    [key: string]: unknown;
+  };
 }
 
 interface AvailableTime {
@@ -143,6 +148,11 @@ export default function VenueDetailPage() {
     window.addEventListener('setSelectedTimesForTicket', handler as EventListener);
     return () => window.removeEventListener('setSelectedTimesForTicket', handler as EventListener);
   }, []);
+
+  // Handle date change from CheckoutTicketHourly
+  const handleDateChange = (newDate: string) => {
+    setSelectedDate(newDate);
+  };
 
   const handleCheckout = async () => {
     setShowCheckout(true);
@@ -347,19 +357,35 @@ export default function VenueDetailPage() {
           }
         });
 
-        // Jika facilityId adalah '1', hanya gunakan sub-fasilitas yang sf_additional (setelah di-parse) memiliki start dan end yang mencakup waktu sekarang
+        // Get day of week from selectedDate (1=Senin, 2=Selasa, ..., 7=Minggu)
+        const selectedDateObj = new Date(selectedDate);
+        let dayOfWeek = selectedDateObj.getDay(); // 0=Sunday, 1=Monday, ..., 6=Saturday
+        dayOfWeek = dayOfWeek === 0 ? 7 : dayOfWeek; // Convert: 0 (Sunday) -> 7, others stay same
+
         console.log('Facility ID:', facilityId);
+        console.log('Selected Date:', selectedDate);
+        console.log('Day of Week:', dayOfWeek);
         console.log('Original facility data:', data);
+
+        // Filter berdasarkan hari operasional (additonalday)
+        data = data.filter((facility: FacilityDetail) => {
+          // Cek apakah facility beroperasi di hari yang dipilih
+          if (!facility.var || !facility.var.additonalday || !facility.var.additonalday[dayOfWeek.toString()]) {
+            console.log(`Facility ${facility.nama_fasilitas} tidak beroperasi di hari ${dayOfWeek}`);
+            return false;
+          }
+          return true;
+        });
+
+        // Jika facilityId adalah '1', gunakan additonaltime[0] sebagai jam buka dan additonaltime[1] sebagai jam tutup
         if (facilityId == "1") {
           const now = new Date();
           const nowMinutes = now.getHours() * 60 + now.getMinutes();
           const tempdata: FacilityDetail[] = data.filter((facility: FacilityDetail) => {
-            if (!facility.sf_additional) return false;
-            const sf = facility.sf_additional as { start?: string; end?: string };
-            if (!sf.start || !sf.end) return false;
-            // Normalisasi format jam (titik ke titik dua)
-            const start = sf.start.replace('.', ':');
-            const end = sf.end.replace('.', ':');
+            // Pastikan var.additonaltime ada dan valid
+            if (!facility.var || !Array.isArray(facility.var.additonaltime) || facility.var.additonaltime.length < 2) return false;
+            const start = facility.var.additonaltime[0].replace('.', ':');
+            const end = facility.var.additonaltime[1].replace('.', ':');
             const [startHour, startMinute] = start.split(':').map(Number);
             const [endHour, endMinute] = end.split(':').map(Number);
             const startTotal = startHour * 60 + startMinute;
@@ -371,11 +397,13 @@ export default function VenueDetailPage() {
               return nowMinutes >= startTotal && nowMinutes <= endTotal;
             }
           });
+          
           console.log('Filtered facility data:', tempdata);
+
           data = tempdata;
         }
 
-        console.log('Parsed facility data:', data);
+        console.log('Final facility data after filtering:', data);
         setFacilityData(data);
         // Set the first facility as default selected sub-facility
         if (data.length > 0) {
@@ -393,7 +421,7 @@ export default function VenueDetailPage() {
     if (facilityId) {
       fetchFacilityData();
     }
-  }, [facilityId]);
+  }, [facilityId, selectedDate]);
 
   // Fetch available times when sub-facility or date changes
   useEffect(() => {
@@ -521,10 +549,10 @@ export default function VenueDetailPage() {
   // Fallback data for demo purposes
   const venue = {
     id: facilityId,
-    name: mainFacility?.nama_fasilitas || "Coming Soon",
+    name: mainFacility?.nama_fasilitas || "Coming Soon Facility",
     description: mainFacility?.description || "Exciting new sports facility coming soon!",
     images: images.length > 0 ? images : [
-      "https://images.pexels.com/photos/3076516/pexels-photo-3076516.jpeg"
+      "/Plaza_Festival.jpg"
     ],
     facilities: [
       { icon: "🚻", name: "Restroom" },
@@ -701,13 +729,14 @@ export default function VenueDetailPage() {
         />
 
         {/* Booking Section */}
-        {facilityId == "1" ? (
+        {facilityId == "1" ? ( 
           <CheckoutTicketHourly
             pricePerTicket={selectedSubFacility?.pricehours || 0}
             selectedSubFacility={selectedSubFacility}
             ticketCount={ticketCount}
             setTicketCount={setTicketCount}
             onCheckout={handleCheckout}
+            onDateChange={handleDateChange}
           />
         ) : (
           <BookingSection

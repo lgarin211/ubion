@@ -20,6 +20,7 @@ interface CheckoutTicketHourlyProps {
   selectedSubFacility?: FacilityDetail | null;
   ticketCount: number;
   setTicketCount: (count: number) => void;
+  onDateChange?: (date: string) => void;
 }
 
 
@@ -28,13 +29,24 @@ export const CheckoutTicketHourly: React.FC<CheckoutTicketHourlyProps> = ({
   pricePerTicket,
   selectedSubFacility,
   ticketCount,
-  setTicketCount
+  setTicketCount,
+  onDateChange
 }) => {
 
-  const [bookingDate, setBookingDate] = React.useState<string>('');
+  const [bookingDate, setBookingDate] = React.useState<string>(() => {
+    const today = new Date().toISOString().split('T')[0];
+    return today;
+  });
   
   // Set minimum date to today
   const today = new Date().toISOString().split('T')[0];
+
+  // Notify parent component about initial date
+  React.useEffect(() => {
+    if (onDateChange && bookingDate) {
+      onDateChange(bookingDate);
+    }
+  }, [onDateChange, bookingDate]); // Run when onDateChange is available or bookingDate changes
 
   const total = ticketCount * pricePerTicket;
 
@@ -54,42 +66,64 @@ export const CheckoutTicketHourly: React.FC<CheckoutTicketHourlyProps> = ({
             <input
               type="date"
               value={bookingDate}
-              onChange={(e) => setBookingDate(e.target.value)}
+              onChange={(e) => {
+                const newDate = e.target.value;
+                setBookingDate(newDate);
+                // Notify parent component about date change
+                if (onDateChange) {
+                  onDateChange(newDate);
+                }
+              }}
               min={today}
               className="px-4 py-3 border-2 border-green-200 rounded-xl focus:border-green-400 focus:outline-none text-lg font-medium"
               required
             />
           </label>
           
-          {/* Ticket Count */}
-          <label className="flex items-center justify-between text-lg font-medium">
-            <span>Jumlah Tiket</span>
-            <div className="flex items-center gap-2">
-              <button
-                type="button"
-                aria-label="Kurangi"
-                className="w-10 h-10 rounded-full bg-green-100 text-green-700 text-2xl font-bold flex items-center justify-center border-2 border-green-400 hover:bg-green-200 transition"
-                onClick={() => setTicketCount(Math.max(0, ticketCount - 1))}
-                disabled={ticketCount === 0}
-              >
-                –
-              </button>
-              <span className="w-12 text-center text-2xl font-bold select-none">{ticketCount}</span>
-              <button
-                type="button"
-                aria-label="Tambah"
-                className="w-10 h-10 rounded-full bg-green-100 text-green-700 text-2xl font-bold flex items-center justify-center border-2 border-green-400 hover:bg-green-200 transition"
-                onClick={() => setTicketCount(Math.min(20, ticketCount + 1))}
-                disabled={ticketCount === 20}
-              >
-                +
-              </button>
+          {/* Show message if no sub-facility available */}
+          {!selectedSubFacility && (
+            <div className="p-4 bg-yellow-50 border border-yellow-200 rounded-xl">
+              <div className="text-yellow-700 font-medium flex items-center gap-2">
+                <span role="img" aria-label="warning">⚠️</span> 
+                Tidak ada fasilitas yang tersedia untuk tanggal yang dipilih
+              </div>
+              <div className="text-yellow-600 text-sm mt-1">
+                Silakan pilih tanggal lain atau coba lagi nanti
+              </div>
             </div>
-          </label>
+          )}
+          
+          {/* Ticket Count - Only show if selectedSubFacility exists */}
+          {selectedSubFacility && (
+            <label className="flex items-center justify-between text-lg font-medium">
+              <span>Jumlah Tiket</span>
+              <div className="flex items-center gap-2">
+                <button
+                  type="button"
+                  aria-label="Kurangi"
+                  className="w-10 h-10 rounded-full bg-green-100 text-green-700 text-2xl font-bold flex items-center justify-center border-2 border-green-400 hover:bg-green-200 transition"
+                  onClick={() => setTicketCount(Math.max(0, ticketCount - 1))}
+                  disabled={ticketCount === 0}
+                >
+                  –
+                </button>
+                <span className="w-12 text-center text-2xl font-bold select-none">{ticketCount}</span>
+                <button
+                  type="button"
+                  aria-label="Tambah"
+                  className="w-10 h-10 rounded-full bg-green-100 text-green-700 text-2xl font-bold flex items-center justify-center border-2 border-green-400 hover:bg-green-200 transition"
+                  onClick={() => setTicketCount(Math.min(20, ticketCount + 1))}
+                  disabled={ticketCount === 20}
+                >
+                  +
+                </button>
+              </div>
+            </label>
+          )}
         </div>
         <button
           className="w-full mt-8 bg-gradient-to-r from-green-500 to-emerald-600 text-white py-3 rounded-xl font-bold text-lg shadow-md hover:from-green-600 hover:to-emerald-700 transition disabled:opacity-50"
-          disabled={ticketCount === 0 || !bookingDate}
+          disabled={!selectedSubFacility || ticketCount === 0 || !bookingDate}
           onClick={() => {
             window.dispatchEvent(new CustomEvent('setSelectedTimesForTicket', { detail: ['TIKET'] }));
             onCheckout([{ time: '', count: ticketCount }], total, bookingDate);

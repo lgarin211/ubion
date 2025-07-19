@@ -206,9 +206,8 @@ export function BookingSection({
         <div className="bg-gradient-to-br from-gray-100 to-gray-200 rounded-lg p-6 text-black flex-1 flex items-center justify-center">
           <div className="text-center py-8">
             <div className="text-6xl mb-4">🏗️</div>
-            <div className="text-gray-500 font-semibold text-lg mb-2">Coming Soon</div>
+            <div className="text-gray-500 font-semibold text-lg mb-2"></div>
             <div className="text-gray-400 text-sm max-w-xs mx-auto">
-              New time slots will be available soon! Stay tuned for booking opportunities.
             </div>
           </div>
         </div>

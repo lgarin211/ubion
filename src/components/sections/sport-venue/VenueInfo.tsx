@@ -60,7 +60,7 @@ export function VenueInfo({
       <div 
         className="mb-6 text-gray-200 max-w-2xl" 
         dangerouslySetInnerHTML={{ 
-          __html: (selectedSubFacility?.description || mainFacility?.description || "Exciting new sports facility coming soon!")
+          __html: (selectedSubFacility?.description || mainFacility?.description || "Harap Tunggu Informasi Lebih Lanjut untuk Vasilitas Ini ya")
         }} 
       />
       
@@ -76,7 +76,7 @@ export function VenueInfo({
       {/* Sub-facilities Selection */}
       {facilityData.length > 1 && (
         <div className="mb-6">
-          <h3 className="text-xl font-semibold mb-3 text-teal-400">Available Sub-Facilities:</h3>
+          <h3 className="text-xl font-semibold mb-3 text-teal-400">Atau Pilih Vasilitas:</h3>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
             {facilityData.map((facility) => (
               <div 

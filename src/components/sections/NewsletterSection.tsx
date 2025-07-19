@@ -2,7 +2,7 @@ import { Button } from "@/components/ui/button"
 
 export function NewsletterSection() {
   return (
-    <section className="py-14 bg-gradient-to-br from-[#f8fff3] to-[#e3f2fd]">
+    <section className="py-14 bg-gradient-to-br from-[#f8fff3] to-[#e3f2fd] hidden">
       <div className="container mx-auto px-4 flex justify-center">
         <div className="w-full max-w-lg bg-white/90 rounded-2xl shadow-lg p-6 sm:p-10 flex flex-col items-center">
           <div className="mb-4 flex items-center justify-center">

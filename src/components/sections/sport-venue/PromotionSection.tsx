@@ -6,8 +6,6 @@ import {
   Carousel,
   CarouselContent,
   CarouselItem,
-  CarouselNext,
-  CarouselPrevious,
 } from "@/components/ui/carousel"
 import { useState, useEffect } from "react"
 import { useRouter } from "next/navigation"
@@ -51,6 +49,9 @@ export function PromotionSection({ facilityId = 1 }: PromotionSectionProps) {
   const handleViewDetail = (facilityId: string) => {
     router.push(`/sport-venue/${facilityId}`)
   }
+
+  console.log("PromotionSection Props:", { facilityId, facilities })
+
   return (
     <section className="py-20 bg-[#F0F9E8]">
       <div className="container mx-auto px-6">
@@ -105,8 +106,8 @@ export function PromotionSection({ facilityId = 1 }: PromotionSectionProps) {
                     </CarouselItem>
                   ))}
                 </CarouselContent>
-                <CarouselPrevious className="bg-white border-2 border-gray-200 hover:bg-gray-100" />
-                <CarouselNext className="bg-white border-2 border-gray-200 hover:bg-gray-100" />
+                {/* <CarouselPrevious className="bg-white border-2 border-gray-200 hover:bg-gray-100" />
+                <CarouselNext className="bg-white border-2 border-gray-200 hover:bg-gray-100" /> */}
               </Carousel>
             </div>
           ) : (
@@ -149,8 +150,8 @@ export function PromotionSection({ facilityId = 1 }: PromotionSectionProps) {
                   </CarouselItem>
                 ))}
               </CarouselContent>
-              <CarouselPrevious className="bg-white border-2 border-gray-200 hover:bg-gray-100" />
-              <CarouselNext className="bg-white border-2 border-gray-200 hover:bg-gray-100" />
+              {/* <CarouselPrevious className="bg-white border-2 border-gray-200 hover:bg-gray-100" />
+              <CarouselNext className="bg-white border-2 border-gray-200 hover:bg-gray-100" /> */}
             </Carousel>
           )}
         </div>

@@ -29,7 +29,7 @@ export default function RootLayout({
         <footer className="bg-white border-t">
           <div className="container mx-auto px-6 py-12">
             <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
-              <div>
+              <div className="space-y-4 hidden">
                 <h3 className="text-lg font-semibold mb-4">Our Company</h3>
                 <ul className="space-y-2">
                   {["About Us", "News", "Career"].map((item) => (

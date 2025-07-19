@@ -85,9 +85,9 @@ export function GetToKnowSection({ data }: GetToKnowSectionProps) {
     };
     
     // Set initial images only (no auto shuffle)
-    setInterval(() => {
-          setDisplayedImages(getRandomImages());
-    }, 10000);
+    setTimeout(() => {
+        setDisplayedImages(getRandomImages());
+    }, 100000);
     
   }, [bannerImages, defaultGalleryImages]);
 
@@ -114,12 +114,12 @@ export function GetToKnowSection({ data }: GetToKnowSectionProps) {
               </p>
             )}
             
-            <Button variant="outline" className="mt-8">More About Us</Button>
+            <Button variant="outline" className="mt-8 hidden">More About Us</Button>
           </div>
           <div className="grid grid-cols-2 gap-4">
             {/* Display max 4 images - static display (no auto shuffle) */}
             {imagesToShow.length > 0 && (
-              <div className="col-span-2 grid grid-cols-2 gap-4">
+              <div className="col-span-2 grid grid-cols-2 gap-4" style={{ transform: 'scale(1)' }}>
                 {imagesToShow.map((image, index) => (
                   <div 
                     key={`${image}-${index}`} 

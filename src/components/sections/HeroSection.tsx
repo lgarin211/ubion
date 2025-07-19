@@ -136,6 +136,7 @@ export function HeroSection({ data }: HeroSectionProps) {
         .swiper-button-next,
         .swiper-button-prev {
           color: white !important;
+          display:none;
         }
         .swiper-button-next:after,
         .swiper-button-prev:after {

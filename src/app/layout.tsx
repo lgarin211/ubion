@@ -1,6 +1,10 @@
+
+
+
 import type { Metadata } from "next"
 import { Inter } from "next/font/google"
 import "./globals.css"
+import NavbarClient from "./NavbarClient";
 
 const inter = Inter({ subsets: ["latin"] })
 
@@ -9,57 +13,19 @@ export const metadata: Metadata = {
   description: "Your premiere destination for dining, shopping and entertainment",
 }
 
+
 export default function RootLayout({
   children,
-}: Readonly<{
-  children: React.ReactNode
-}>) {
+}: Readonly<{ children: React.ReactNode }>) {
   return (
     <html lang="en">
-      <head>
-        <link rel="preconnect" href="https://fonts.googleapis.com" />
-        <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
-        <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
-      </head>
+      <head></head>
       <body className={inter.className}>
         {/* Navigation */}
-        <nav className="fixed w-full z-50 bg-white/95 backdrop-blur supports-[backdrop-filter]:bg-white/60">
-          <div className="container mx-auto px-6">
-            <div className="flex items-center justify-between h-16">
-              <div className="flex-shrink-0">
-                <span className="text-xl font-bold">Plaza Festival</span>
-              </div>
-              <div className="hidden md:block">
-                <div className="ml-10 flex items-baseline space-x-4">
-                  {[
-                    { name: "About", href: "#" },
-                    { name: "Tenants", href: "#" },
-                    { name: "Events", href: "#" },
-                    { name: "Sport Venue", href: "/sport-venue" }
-                  ].map((item) => (
-                    <a
-                      key={item.name}
-                      href={item.href}
-                      className="text-gray-800 hover:text-gray-600 px-3 py-2 rounded-md text-sm font-medium"
-                    >
-                      {item.name}
-                    </a>
-                  ))}
-                  <a
-                    href="#"
-                    className="bg-[#8BC34A] text-white px-4 py-2 rounded-md text-sm font-medium hover:bg-[#7CB342]"
-                  >
-                    Book Now
-                  </a>
-                </div>
-              </div>
-            </div>
-          </div>
-        </nav>
+        <NavbarClient />
 
         {children}
 
-        {/* Footer */}
         <footer className="bg-white border-t">
           <div className="container mx-auto px-6 py-12">
             <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
@@ -114,12 +80,12 @@ export default function RootLayout({
             </div>
             <div className="mt-8 pt-8 border-t">
               <p className="text-center text-gray-500">
-                © 2024 Plaza Festival. All rights reserved.
+                © 2025 Plaza Festival. All rights reserved.
               </p>
             </div>
           </div>
         </footer>
       </body>
     </html>
-  )
+  );
 }

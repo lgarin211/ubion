@@ -18,8 +18,14 @@ interface RestaurantModalProps {
 }
 
 export function RestaurantModal({ isOpen, onClose, restaurant }: RestaurantModalProps) {
+  const handleOpenChange = (open: boolean) => {
+    if (!open) {
+      onClose();
+    }
+  };
+
   return (
-    <Dialog open={isOpen} onOpenChange={onClose}>
+    <Dialog open={isOpen} onOpenChange={handleOpenChange}>
       <DialogContent className="max-w-3xl">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2 text-2xl">

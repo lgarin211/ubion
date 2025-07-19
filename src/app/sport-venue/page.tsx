@@ -9,7 +9,7 @@ export default function SportVenuePage() {
     <main className="min-h-screen">
       <HeroSection />
       <VenueList />
-      {/* <PromotionSection /> */}
+      <PromotionSection />
     </main>
   )
 }

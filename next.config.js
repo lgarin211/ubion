@@ -24,8 +24,13 @@ const nextConfig = {
         hostname: 'brihub.progesio.my.id',
         pathname: '/**',
       },
+      {
+        protocol: 'https',
+        hostname: 'api.qrserver.com',
+        pathname: '/**',
+      },
     ],
   },
-}
+};
 
-module.exports = nextConfig
+module.exports = nextConfig;

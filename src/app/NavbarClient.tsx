@@ -1,6 +1,8 @@
 "use client"
+
 import { useState, useEffect } from "react"
 import { BookingModal } from "@/components/ui/booking-modal"
+import Image from "next/image"
 
 const navItems = [
   { name: "About", href: "/" },
@@ -47,10 +49,13 @@ export default function NavbarClient() {
         <div className="flex items-center justify-between h-16">
           {/* Logo */}
           <div className="flex-shrink-0">
-            <img 
-              src="/plazalogo.png" 
-              alt="Plaza Festival Logo" 
-              className="h-8 sm:h-10 w-auto" 
+            <Image
+              src="/plazalogo.png"
+              alt="Plaza Festival Logo"
+              width={120}
+              height={40}
+              className="h-8 sm:h-10 w-auto"
+              priority
             />
           </div>
           
@@ -115,7 +120,14 @@ export default function NavbarClient() {
         }`}>
           {/* Header */}
           <div className="flex items-center justify-between p-4 border-b border-gray-200 bg-white">
-            <img src="/plazalogo.png" alt="Plaza Festival Logo" className="h-8" />
+            <Image
+              src="/plazalogo.png"
+              alt="Plaza Festival Logo"
+              width={120}
+              height={40}
+              className="h-8"
+              priority
+            />
             <button
               onClick={() => setMobileMenuOpen(false)}
               className="p-2 rounded-lg text-gray-600 hover:text-gray-800 hover:bg-gray-100 transition-all duration-200"

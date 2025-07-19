@@ -66,10 +66,10 @@ export default function Home() {
         </div>
       )}
       <HeroSection data={data.data.component0} />
+      <GetToKnowSection data={data.data.component1} />
       <div className="container mx-auto px-4 py-8">
           <InstagramPoin />
       </div>
-      <GetToKnowSection data={data.data.component1} />
       <EventsSection data={data.data.component2} />
       <SportsExperienceSection data={data.data.component3} />
       <FoodCourtSection data={data.data.component4?.map(item => ({

@@ -11,6 +11,7 @@ import { CacheDebug } from "@/components/ui/cache-debug"
 import { ApiConfig } from "@/lib/sessionCache"
 import GmapsLocation from "@/components/sections/gmapsLocation"
 import InstagramPoin from "@/components/sections/IntagramPoin"
+import Testimony from "@/components/sections/Testimony"
 
 export default function Home() {
   const { data, loading, error } = useWelcomeData();
@@ -78,6 +79,9 @@ export default function Home() {
       }))} />
       <NewsletterSection />
       <GmapsLocation />
+      <div className="container px-4 py-8 justify-center mx-auto">
+          <Testimony />
+      </div>
     </main>
   )
 }

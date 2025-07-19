@@ -112,7 +112,7 @@ export function SportsExperienceSection({ data }: SportsExperienceSectionProps) 
           ))}
         </div>
         <div className="text-center mt-8">
-          <Button variant="outline">See More</Button>
+          <Button variant="outline" className="hidden">See More</Button>
         </div>
       </div>
 

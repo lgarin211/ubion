@@ -9,6 +9,8 @@ import { NewsletterSection } from "@/components/sections/NewsletterSection"
 import { useWelcomeData } from "@/hooks/useWelcomeData"
 import { CacheDebug } from "@/components/ui/cache-debug"
 import { ApiConfig } from "@/lib/sessionCache"
+import GmapsLocation from "@/components/sections/gmapsLocation"
+import InstagramPoin from "@/components/sections/IntagramPoin"
 
 export default function Home() {
   const { data, loading, error } = useWelcomeData();
@@ -64,6 +66,9 @@ export default function Home() {
         </div>
       )}
       <HeroSection data={data.data.component0} />
+      <div className="container mx-auto px-4 py-8">
+          <InstagramPoin />
+      </div>
       <GetToKnowSection data={data.data.component1} />
       <EventsSection data={data.data.component2} />
       <SportsExperienceSection data={data.data.component3} />
@@ -72,6 +77,7 @@ export default function Home() {
         image: item.img
       }))} />
       <NewsletterSection />
+      <GmapsLocation />
     </main>
   )
 }

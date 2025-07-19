@@ -52,7 +52,7 @@ export function EventsSection({ data }: EventsSectionProps) {
   };
 
   return (
-    <section className="py-20 bg-gray-50">
+    <section className="py-20 bg-gray-50" id="events">
       <div className="container mx-auto px-6">
         <h2 className="text-4xl font-bold mb-12">Event & Promotion Information</h2>
         <p className="text-gray-600 mb-8">Don&apos;t miss out on other exciting events and promos at Plaza Festival</p>
@@ -71,7 +71,7 @@ export function EventsSection({ data }: EventsSectionProps) {
                       className="object-cover rounded-t-lg"
                     />
                   </div>
-                  <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center">
+                  <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center hidden">
                     <Button variant="secondary">More</Button>
                   </div>
                 </div>
@@ -108,7 +108,7 @@ export function EventsSection({ data }: EventsSectionProps) {
                     />
                   </div>
                   <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center">
-                    <Button variant="secondary">More</Button>
+                    <Button variant="secondary" className="hidden">More</Button>
                   </div>
                 </div>
                 <div className="p-6">

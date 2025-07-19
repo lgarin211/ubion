@@ -166,7 +166,7 @@ export function FoodCourtSection({ data }: FoodCourtSectionProps) {
   }, [restaurantDetail, detailLoading, selectedRestaurantId, selectedRestaurant, parseHtmlContent, getFullImageUrl]);
 
   return (
-    <section className="py-20 bg-gray-50">
+    <section className="py-20 bg-gray-50" id="tenants">
       <div className="container mx-auto px-6">
         <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-8">
           <h2 className="text-4xl font-bold mb-4 md:mb-0">Enjoy time with good quality food</h2>

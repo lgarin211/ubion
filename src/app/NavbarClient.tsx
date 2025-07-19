@@ -5,9 +5,9 @@ import { BookingModal } from "@/components/ui/booking-modal"
 import Image from "next/image"
 
 const navItems = [
-  { name: "About", href: "/" },
-  { name: "Tenants", href: "/" },
-  { name: "Events", href: "/" },
+  { name: "About", href: "/#" },
+  { name: "Tenants", href: "/#tenants" },
+  { name: "Events", href: "/#events" },
   { name: "Sport Venue", href: "/sport-venue" },
   { name: "Riwayat Transaksi", href: "/transaction-history" }
 ];

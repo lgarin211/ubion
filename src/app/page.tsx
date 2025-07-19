@@ -11,6 +11,7 @@ import { CacheDebug } from "@/components/ui/cache-debug"
 import { ApiConfig } from "@/lib/sessionCache"
 import GmapsLocation from "@/components/sections/gmapsLocation"
 import InstagramPoin from "@/components/sections/IntagramPoin"
+import Testimony from "@/components/sections/Testimony"
 
 export default function Home() {
   const { data, loading, error } = useWelcomeData();
@@ -66,10 +67,10 @@ export default function Home() {
         </div>
       )}
       <HeroSection data={data.data.component0} />
+      <GetToKnowSection data={data.data.component1} />
       <div className="container mx-auto px-4 py-8">
           <InstagramPoin />
       </div>
-      <GetToKnowSection data={data.data.component1} />
       <EventsSection data={data.data.component2} />
       <SportsExperienceSection data={data.data.component3} />
       <FoodCourtSection data={data.data.component4?.map(item => ({
@@ -78,6 +79,9 @@ export default function Home() {
       }))} />
       <NewsletterSection />
       <GmapsLocation />
+      <div className="container px-4 py-8 justify-center mx-auto">
+          <Testimony />
+      </div>
     </main>
   )
 }

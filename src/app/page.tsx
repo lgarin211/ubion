@@ -73,12 +73,14 @@ export default function Home() {
       </div>
       <EventsSection data={data.data.component2} />
       <SportsExperienceSection data={data.data.component3} />
-      <FoodCourtSection data={data.data.component4?.map(item => ({
-        ...item,
-        image: item.img
-      }))} />
+      <FoodCourtSection 
+        data={data.data.component4?.map(item => ({
+          ...item,
+          image: item.img
+        }))} 
+        mapsImages={data.data.component6}
+      />
       <NewsletterSection />
-      <GmapsLocation />
       <div className="container px-4 py-8 justify-center mx-auto">
           <Testimony />
       </div>

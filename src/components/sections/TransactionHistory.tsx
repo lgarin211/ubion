@@ -332,7 +332,7 @@ export default function TransactionHistory() {
       <h2 className="text-3xl font-extrabold mb-8 tracking-tight text-gray-800">Riwayat Transaksi</h2>
 
       {/* Filter Buttons */}
-      <div className="grid grid-cols-2 sm:flex gap-2 sm:gap-3 mb-8 w-full max-w-md sm:max-w-none">
+      <div className="grid grid-cols-2 sm:flex sm:justify-center gap-2 sm:gap-3 mb-8 w-full max-w-md sm:max-w-none">
         <button
           className={`px-3 sm:px-4 py-2 rounded-full font-semibold border transition-all text-xs sm:text-sm ${filter === 'all' ? 'bg-[#8BC34A] text-white border-[#8BC34A]' : 'bg-white text-gray-700 border-gray-300 hover:bg-gray-100'}`}
           onClick={() => setFilter('all')}

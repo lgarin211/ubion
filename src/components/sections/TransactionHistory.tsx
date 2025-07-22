@@ -114,6 +114,43 @@ export default function TransactionHistory() {
     }
   };
 
+  // Function to render HTML content for print (keep HTML tags)
+  const renderHtmlForPrint = (htmlString: string): string => {
+    if (!htmlString) return '-';
+    // Clean up common HTML entities and format for print
+    return htmlString
+      .replace(/&mdash;/g, '—')
+      .replace(/&nbsp;/g, ' ')
+      .replace(/&amp;/g, '&')
+      .replace(/&lt;/g, '<')
+      .replace(/&gt;/g, '>')
+      .replace(/&quot;/g, '"')
+      .replace(/<br\s*\/?>/gi, '<br>')
+      .replace(/<p>/gi, '<p style="margin: 4px 0;">')
+      .replace(/<strong>/gi, '<strong style="font-weight: bold;">')
+      .replace(/<em>/gi, '<em style="font-style: italic;">')
+      .replace(/<ul>/gi, '<ul style="margin: 4px 0; padding-left: 16px;">')
+      .replace(/<ol>/gi, '<ol style="margin: 4px 0; padding-left: 16px;">')
+      .replace(/<li>/gi, '<li style="margin: 2px 0;">');
+  };
+
+  // Function to truncate HTML content to max 10 words
+  const truncateHtmlContent = (htmlString: string, maxWords: number = 10): string => {
+    if (!htmlString) return '-';
+    
+    // Remove HTML tags to count words
+    const textContent = htmlString.replace(/<[^>]*>/g, '').trim();
+    const words = textContent.split(/\s+/);
+    
+    if (words.length <= maxWords) {
+      return htmlString; // Return original if within limit
+    }
+    
+    // If longer than maxWords, truncate and add ellipsis
+    const truncatedText = words.slice(0, maxWords).join(' ') + '...';
+    return truncatedText;
+  };
+
   // Function to parse facility additional data
   const parseFacilityAdditional = (additional: string) => {
     try {
@@ -165,9 +202,9 @@ export default function TransactionHistory() {
             .receipt-title { text-align: center; font-size: 1.5rem; font-weight: bold; margin-bottom: 12px; letter-spacing: 1px; }
             .status-badge { display: inline-block; font-size: 1rem; font-weight: bold; padding: 6px 18px; border-radius: 999px; margin-bottom: 18px; background: #e8f5e9; color: #388e3c; }
             .section-title { font-size: 1.1rem; font-weight: bold; margin: 28px 0 10px 0; border-bottom: 1.5px solid #e0e0e0; padding-bottom: 4px; }
-            .row { display: flex; justify-content: space-between; margin-bottom: 7px; }
-            .row-label { color: #666; min-width: 120px; }
-            .row-value { font-weight: 500; text-align: right; }
+            .row { display: flex; justify-content: space-between; margin-bottom: 7px; align-items: flex-start; }
+            .row-label { color: #666; min-width: 120px; flex-shrink: 0; }
+            .row-value { font-weight: 500; text-align: right; flex: 1; word-wrap: break-word; }
             .amount { font-size: 2rem; font-weight: bold; color: #16a34a; margin: 18px 0 6px 0; text-align: center; }
             .subtext { text-align: center; color: #888; font-size: 0.95rem; margin-bottom: 18px; }
             .qr-section { text-align: center; margin: 32px 0 18px 0; }
@@ -193,7 +230,7 @@ export default function TransactionHistory() {
             <div class="section-title">Detail Fasilitas</div>
             <div class="facility-details">
               <div class="row"><span class="row-label">Nama Fasilitas</span><span class="row-value">${transactionDetail?.tfas_name || '-'}</span></div>
-              <div class="row"><span class="row-label">Deskripsi</span><span class="row-value">${transactionDetail?.tfas_description || '-'}</span></div>
+              <div class="row"><span class="row-label">Deskripsi</span><span class="row-value">${renderHtmlForPrint(transactionDetail?.tfas_description || '')}</span></div>
               <div class="row"><span class="row-label">Harga per Jam</span><span class="row-value">${transactionDetail?.tfas_pricehours ? 'Rp ' + parseInt(transactionDetail.tfas_pricehours).toLocaleString() : '-'}</span></div>
               ${(function() {
                 try {
@@ -295,27 +332,27 @@ export default function TransactionHistory() {
       <h2 className="text-3xl font-extrabold mb-8 tracking-tight text-gray-800">Riwayat Transaksi</h2>
 
       {/* Filter Buttons */}
-      <div className="flex gap-3 mb-8">
+      <div className="grid grid-cols-2 sm:flex gap-2 sm:gap-3 mb-8 w-full max-w-md sm:max-w-none">
         <button
-          className={`px-4 py-2 rounded-full font-semibold border transition-all text-sm ${filter === 'all' ? 'bg-[#8BC34A] text-white border-[#8BC34A]' : 'bg-white text-gray-700 border-gray-300 hover:bg-gray-100'}`}
+          className={`px-3 sm:px-4 py-2 rounded-full font-semibold border transition-all text-xs sm:text-sm ${filter === 'all' ? 'bg-[#8BC34A] text-white border-[#8BC34A]' : 'bg-white text-gray-700 border-gray-300 hover:bg-gray-100'}`}
           onClick={() => setFilter('all')}
         >
           Semua
         </button>
         <button
-          className={`px-4 py-2 rounded-full font-semibold border transition-all text-sm ${filter === 'pending' ? 'bg-yellow-400 text-white border-yellow-400' : 'bg-white text-gray-700 border-gray-300 hover:bg-gray-100'}`}
+          className={`px-3 sm:px-4 py-2 rounded-full font-semibold border transition-all text-xs sm:text-sm ${filter === 'pending' ? 'bg-yellow-400 text-white border-yellow-400' : 'bg-white text-gray-700 border-gray-300 hover:bg-gray-100'}`}
           onClick={() => setFilter('pending')}
         >
           Pending
         </button>
         <button
-          className={`px-4 py-2 rounded-full font-semibold border transition-all text-sm ${filter === 'expired' ? 'bg-gray-400 text-white border-gray-400' : 'bg-white text-gray-700 border-gray-300 hover:bg-gray-100'}`}
+          className={`px-3 sm:px-4 py-2 rounded-full font-semibold border transition-all text-xs sm:text-sm ${filter === 'expired' ? 'bg-gray-400 text-white border-gray-400' : 'bg-white text-gray-700 border-gray-300 hover:bg-gray-100'}`}
           onClick={() => setFilter('expired')}
         >
           Expired
         </button>
         <button
-          className={`px-4 py-2 rounded-full font-semibold border transition-all text-sm ${filter === 'success' ? 'bg-green-500 text-white border-green-500' : 'bg-white text-gray-700 border-gray-300 hover:bg-gray-100'}`}
+          className={`px-3 sm:px-4 py-2 rounded-full font-semibold border transition-all text-xs sm:text-sm ${filter === 'success' ? 'bg-green-500 text-white border-green-500' : 'bg-white text-gray-700 border-gray-300 hover:bg-gray-100'}`}
           onClick={() => setFilter('success')}
         >
           Success
@@ -330,31 +367,31 @@ export default function TransactionHistory() {
       ) : filteredHistory.length === 0 ? (
         <div className="text-gray-500 text-lg">Tidak ada transaksi dengan filter ini.</div>
       ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 w-full max-w-6xl">
+        <div className="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6 w-full max-w-6xl">
           {filteredHistory.map((trx) => (
             <div key={trx.trxid} className="relative border border-gray-200 rounded-2xl bg-white shadow-lg hover:shadow-xl transition-all group overflow-hidden">
               {/* Status Ribbon */}
-              <div className={`absolute top-3 right-3 px-3 py-1 rounded-full text-xs font-bold ${statusColor(trx.status)} z-10`}>
+              <div className={`absolute top-2 right-2 md:top-3 md:right-3 px-2 py-1 md:px-3 md:py-1 rounded-full text-xs font-bold ${statusColor(trx.status)} z-10`}>
                 {trx.status?.toUpperCase() || '-'}
               </div>
               
               {/* Card Content */}
-              <div className="p-6 pt-12">
+              <div className="p-3 pt-8 md:p-6 md:pt-12">
                 {/* Header Info */}
-                <div className="mb-4">
+                <div className="mb-3 md:mb-4">
                   <div className="font-mono text-xs text-gray-500 mb-1">ID: {trx.trxid}</div>
                   <div className="text-xs text-gray-400">{trx.date ? new Date(trx.date).toLocaleString() : '-'}</div>
                 </div>
                 
                 {/* Amount */}
-                <div className="text-3xl font-bold text-green-600 mb-4">
+                <div className="text-xl md:text-3xl font-bold text-green-600 mb-3 md:mb-4">
                   Rp {trx.amount?.toLocaleString() || '-'}
                 </div>
                 
                 {/* Method */}
-                <div className="mb-6">
-                  <span className="text-sm text-gray-600">Metode: </span>
-                  <span className="text-sm font-semibold text-gray-800">{trx.method || '-'}</span>
+                <div className="mb-4 md:mb-6">
+                  <span className="text-xs md:text-sm text-gray-600">Metode: </span>
+                  <span className="text-xs md:text-sm font-semibold text-gray-800">{trx.method || '-'}</span>
                 </div>
                 
                 {/* Action Button */}
@@ -362,7 +399,7 @@ export default function TransactionHistory() {
                   <button 
                     onClick={() => handleViewPayment(trx.trxid)}
                     disabled={loadingTrxId === trx.trxid}
-                    className="block w-full text-center bg-blue-600 hover:bg-blue-700 disabled:bg-blue-400 text-white font-bold py-3 px-4 rounded-xl transition-colors duration-200 shadow-md hover:shadow-lg disabled:cursor-not-allowed"
+                    className="block w-full text-center bg-blue-600 hover:bg-blue-700 disabled:bg-blue-400 text-white font-bold py-2 md:py-3 px-3 md:px-4 rounded-xl transition-colors duration-200 shadow-md hover:shadow-lg disabled:cursor-not-allowed text-sm md:text-base"
                   >
                     {loadingTrxId === trx.trxid ? 'Memuat...' : 'Lihat/Bayar'}
                   </button>
@@ -424,9 +461,14 @@ export default function TransactionHistory() {
                     <span className="text-gray-600">Nama Fasilitas</span>
                     <span className="font-medium">{transactionDetail.tfas_name || '-'}</span>
                   </div>
-                  <div className="flex justify-between">
-                    <span className="text-gray-600">Deskripsi</span>
-                    <span className="font-medium">{transactionDetail.tfas_description || '-'}</span>
+                  <div className="flex justify-between items-start">
+                    <span className="text-gray-600 flex-shrink-0 mr-3">Deskripsi</span>
+                    <div 
+                      className="font-medium text-right flex-1"
+                      dangerouslySetInnerHTML={{ 
+                        __html: truncateHtmlContent(transactionDetail.tfas_description || '', 10)
+                      }}
+                    />
                   </div>
                   <div className="flex justify-between">
                     <span className="text-gray-600">Harga per Jam</span>

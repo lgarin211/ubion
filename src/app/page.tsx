@@ -73,11 +73,11 @@ export default function Home() {
       </div>
       <EventsSection data={data.data.component2} />
       <SportsExperienceSection data={data.data.component3} />
-      <FoodCourtSection 
+      <FoodCourtSection
         data={data.data.component4?.map(item => ({
           ...item,
           image: item.img
-        }))} 
+        }))}
         mapsImages={(data.data as Record<string, unknown>).component6 as string[] || undefined}
       />
       <NewsletterSection />

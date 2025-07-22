@@ -231,44 +231,54 @@ export function FoodCourtSection({ data, mapsImages }: FoodCourtSectionProps) {
         </div>
 
         {/* Tab Navigation */}
-        <div className="flex justify-center mb-8">
-          <div className="bg-white rounded-full p-1 shadow-lg">
-            <button
-              onClick={() => setActiveTab('tenants')}
-              className={`px-6 py-3 rounded-full font-semibold transition-all ${
-                activeTab === 'tenants'
-                  ? 'bg-orange-500 text-white shadow-md'
-                  : 'text-gray-600 hover:text-orange-500'
-              }`}
-            >
-              🍽️ Tenant Restoran
-            </button>
-            {mapsImages && mapsImages.length > 0 && (
+        <div className="flex justify-center mb-6 sm:mb-8 px-4">
+          <div className="bg-white rounded p-1 shadow-lg w-full max-w-md sm:max-w-none sm:w-auto">
+            <div className="flex flex-col sm:flex-row gap-1 sm:gap-0">
               <button
-                onClick={() => setActiveTab('maps')}
-                className={`px-6 py-3 rounded-full font-semibold transition-all ${
-                  activeTab === 'maps'
+                onClick={() => setActiveTab('tenants')}
+                className={`px-4 sm:px-6 py-2 sm:py-3 rounded-full font-medium sm:font-semibold text-sm sm:text-base transition-all ${
+                  activeTab === 'tenants'
                     ? 'bg-orange-500 text-white shadow-md'
                     : 'text-gray-600 hover:text-orange-500'
                 }`}
               >
-                🗺️ Peta Lokasi
+                <span className="flex items-center justify-center gap-2">
+                  <span>🍽️</span>
+                  <span className="hidden xs:inline sm:inline">Tenant Restoran</span>
+                  <span className="xs:hidden sm:hidden">Restoran</span>
+                </span>
               </button>
-            )}
+              {mapsImages && mapsImages.length > 0 && (
+                <button
+                  onClick={() => setActiveTab('maps')}
+                  className={`px-4 sm:px-6 py-2 sm:py-3 rounded-full font-medium sm:font-semibold text-sm sm:text-base transition-all ${
+                    activeTab === 'maps'
+                      ? 'bg-orange-500 text-white shadow-md'
+                      : 'text-gray-600 hover:text-orange-500'
+                  }`}
+                >
+                  <span className="flex items-center justify-center gap-2">
+                    <span>🗺️</span>
+                    <span className="hidden xs:inline sm:inline">Peta Lokasi</span>
+                    <span className="xs:hidden sm:hidden">Peta</span>
+                  </span>
+                </button>
+              )}
+            </div>
           </div>
         </div>
 
         {/* Content */}
         {activeTab === 'tenants' && (
           <>
-            <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-8">
-              <h3 className="text-2xl font-bold mb-4 md:mb-0">Enjoy time with good quality food</h3>
+            <div className="flex flex-col gap-4 mb-6 sm:mb-8 px-4">
+              <h3 className="text-xl sm:text-2xl font-bold text-center md:text-left">Enjoy time with good quality food</h3>
               
               {/* Location Filter Dropdown */}
-              <div className="flex items-center gap-2">
-                <span className="text-sm font-medium text-gray-700">Filter by location:</span>
+              <div className="flex flex-col sm:flex-row items-start sm:items-center gap-2 sm:gap-3">
+                <span className="text-xs sm:text-sm font-medium text-gray-700 whitespace-nowrap">Filter by location:</span>
                 <Select value={selectedLocation} onValueChange={setSelectedLocation}>
-                  <SelectTrigger className="w-[200px]">
+                  <SelectTrigger className="w-full sm:w-[200px]">
                     <SelectValue placeholder="Select location" />
                   </SelectTrigger>
                   <SelectContent>
@@ -336,29 +346,37 @@ export function FoodCourtSection({ data, mapsImages }: FoodCourtSectionProps) {
         )}
 
         {activeTab === 'maps' && mapsImages && mapsImages.length > 0 && (
-          <div className="max-w-6xl mx-auto">
+          <div className="max-w-6xl mx-auto px-4">
             {/* Map Filter Buttons */}
-            <div className="flex justify-center mb-6 gap-4">
+            <div className="flex flex-col sm:flex-row justify-center mb-6 gap-3 sm:gap-4">
               <button
                 onClick={() => setSelectedMapIndex(0)}
-                className={`px-6 py-3 rounded-full font-semibold transition-all ${
+                className={`px-4 sm:px-6 py-2 sm:py-3 rounded-full font-medium sm:font-semibold text-sm sm:text-base transition-all ${
                   selectedMapIndex === 0
                     ? 'bg-blue-500 text-white shadow-md'
                     : 'bg-white text-gray-600 hover:text-blue-500 shadow'
                 }`}
               >
-                🏢 Lantai UG (Underground)
+                <span className="flex items-center justify-center gap-2">
+                  <span>🏢</span>
+                  <span className="hidden xs:inline sm:inline">Lantai UG (Underground)</span>
+                  <span className="xs:hidden sm:hidden">Lantai UG</span>
+                </span>
               </button>
               {mapsImages.length > 1 && (
                 <button
                   onClick={() => setSelectedMapIndex(1)}
-                  className={`px-6 py-3 rounded-full font-semibold transition-all ${
+                  className={`px-4 sm:px-6 py-2 sm:py-3 rounded-full font-medium sm:font-semibold text-sm sm:text-base transition-all ${
                     selectedMapIndex === 1
                       ? 'bg-blue-500 text-white shadow-md'
                       : 'bg-white text-gray-600 hover:text-blue-500 shadow'
                   }`}
                 >
-                  🏪 Lantai GF (Ground Floor)
+                  <span className="flex items-center justify-center gap-2">
+                    <span>🏪</span>
+                    <span className="hidden xs:inline sm:inline">Lantai GF (Ground Floor)</span>
+                    <span className="xs:hidden sm:hidden">Lantai GF</span>
+                  </span>
                 </button>
               )}
             </div>

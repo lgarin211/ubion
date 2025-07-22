@@ -54,7 +54,7 @@ export function EventsSection({ data }: EventsSectionProps) {
   return (
     <section className="py-20 bg-gray-50" id="events">
       <div className="container mx-auto px-6">
-        <h2 className="text-4xl font-bold mb-12">Event & Promotion Information</h2>
+        <h2 className="text-4xl font-bold mb-5">Event & Promotion Information</h2>
         <p className="text-gray-600 mb-8">Don&apos;t miss out on other exciting events and promos at Plaza Festival</p>
         {/* Mobile: Carousel, Desktop: Grid */}
         <div className="block md:hidden">
